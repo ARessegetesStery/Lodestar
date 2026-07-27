@@ -1,0 +1,4 @@
+# The shell scripts must keep LF endings. This repository is developed on Windows
+# with core.autocrlf=true, which would otherwise rewrite them to CRLF on checkout
+# and break the shebang: bash reports "bad interpreter: /usr/bin/env bash^M".
+skills/sdd/scripts/** text eol=lf

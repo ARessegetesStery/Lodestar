@@ -1,0 +1,14 @@
+{
+  "name": "arias-stery",
+  "owner": {
+    "name": "Arias Stery"
+  },
+  "plugins": [
+    {
+      "name": "lodestar",
+      "source": "./",
+      "version": "0.1.0",
+      "description": "Minimalistic development skill set: idea brainstorming, design-to-spec, subagent-driven development, cross-session handoff, and end-of-work wrap-up."
+    }
+  ]
+}

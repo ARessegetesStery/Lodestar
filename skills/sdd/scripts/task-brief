@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Extract one task's full text from a plan into its own file, so a dispatched
+# implementer reads only its own task and never the whole plan.
+#
+# Matches a heading of the form `### Task N:` and stops at the next `### Task `
+# or at the end of the file.
+#
+# Usage: task-brief PLAN_FILE N OUTFILE
+set -euo pipefail
+
+if [ $# -ne 3 ]; then
+  echo "usage: task-brief PLAN_FILE N OUTFILE" >&2
+  exit 2
+fi
+
+plan=$1
+n=$2
+out=$3
+
+if [ ! -f "$plan" ]; then
+  echo "task-brief: no such plan file: $plan" >&2
+  exit 1
+fi
+
+awk -v n="$n" '
+  $0 ~ ("^### Task " n ":") { inside = 1; print; next }
+  inside && /^### Task / { exit }
+  inside { print }
+' "$plan" > "$out"
+
+if [ ! -s "$out" ]; then
+  echo "task-brief: no '### Task $n:' heading found in $plan" >&2
+  rm -f "$out"
+  exit 1
+fi
+
+echo "wrote ${out}: $(wc -l < "$out" | tr -d ' ') lines"

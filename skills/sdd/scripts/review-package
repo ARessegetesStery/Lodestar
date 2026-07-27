@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Review package for a repository where nothing is committed -- the owner commits
+# after their own review pass, so a commit-range diff is unavailable. Scoping is by
+# PATH instead: pass the paths the task declared.
+#
+# Emits into one file, for the given paths: a status summary, a real `git diff -U10`
+# for tracked modified files, and the FULL CONTENTS of untracked (new) files, which
+# `git diff` does not show at all. A reviewer reads the whole thing in one call.
+#
+# Usage: review-package OUTFILE PATH [PATH...]
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+  echo "usage: review-package OUTFILE PATH [PATH...]" >&2
+  exit 2
+fi
+
+out=$1
+shift
+root=$(git rev-parse --show-toplevel)
+
+{
+  echo "# Review package (working tree; nothing is committed -- the owner commits after review)"
+  echo
+  echo "## Status of the paths under review"
+  git -C "$root" status --porcelain -- "$@" || true
+  echo
+  echo "## Diffstat (tracked files only)"
+  git -C "$root" diff --stat -- "$@" || true
+  echo
+  echo "## Diff of tracked, modified files (-U10)"
+  git -C "$root" diff -U10 -- "$@" || true
+  echo
+  echo "## Full contents of NEW (untracked) files"
+  git -C "$root" ls-files --others --exclude-standard -z -- "$@" 2>/dev/null |
+    while IFS= read -r -d '' p; do
+      echo
+      echo "### NEW FILE: $p"
+      echo '```'
+      cat "$root/$p"
+      echo '```'
+    done || true
+} > "$out"
+
+# An empty package means the paths matched nothing: a mis-rooted invocation (the
+# script resolves the repo from the working directory, so running it outside the
+# project silently targets the wrong one), a misspelled path, or a task that
+# changed nothing. Reporting success here would hand a reviewer an empty diff and
+# get the work approved by omission, so fail loudly instead.
+if [ -z "$(git -C "$root" status --porcelain -- "$@" 2>/dev/null)" ]; then
+  echo "review-package: NO CHANGES under the given paths, in repo ${root}" >&2
+  echo "review-package: nothing to review -- check the paths and the working directory" >&2
+  rm -f "$out"
+  exit 1
+fi
+
+echo "wrote ${out}: $(wc -c < "$out" | tr -d ' ') bytes"
