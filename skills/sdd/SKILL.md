@@ -101,6 +101,8 @@ Two things about resuming that the ledger cannot supply. If the previous run sto
 
 Conversation memory does not survive compaction, and a controller that has lost its place will re-dispatch work that was already done. The ledger is the recovery map: trust it over your own recollection. It opens with a standing section carrying the plan and spec paths, which governs on a plan-versus-spec conflict, the execution mode, and any hard rules for the run. Append to that section whenever the user issues a directive mid-run -- dated, in their words -- because those bind every later task and nothing else records them.
 
+Below that section, before the first dispatch, write the **task list**: one line per task in the plan, `Task N: <name> -- <one-line summary of what it delivers>`. Progress lines append underneath it. Without it the ledger records only what is finished, so a controller reading it after compaction can see where the run stopped but not how much is left or what it consists of, and it would have to re-read the plan to find out.
+
 **Establish the baseline.** Nothing is committed during a run, so the working tree is the only record of what has been done, and every task's scope check compares against it. What counts as a clean start depends on which kind of run this is, which is why this comes after the ledger lookup rather than before it.
 
 On a **fresh run**, `git status --porcelain` should come back empty. If it does not, stop and tell the user what is outstanding rather than starting. Work that was already uncommitted is indistinguishable from work a task produced, and it will read as scope bleed on every task that follows.
@@ -122,7 +124,7 @@ A clean tree is not a working one. Run the plan's verification strategy once bef
 - A dispatch describes one task, not the session's history. Do not paste accumulated prior-task summaries into later dispatches.
 - If an earlier task parked a finding in the area this task touches, carry a pointer to that ledger entry.
 - Parallel dispatch is fine where the tasks' declared file sets are disjoint, and two implementers must never hold the same file. Disjoint files are necessary and not sufficient: two tasks whose difficulty shares one underlying cause get solved two different ways by two implementers who cannot see each other, and the divergence surfaces only at the final review. Judge conservatively -- a declared list is a claim about what a task will touch, not a guarantee, and tasks working the same area routinely reach further than their list says. Dispatch serially where you suspect a shared root cause, where the sets merely look disjoint, or where either task's boundary is soft. A serial run costs a delay; a wrong call puts two implementers in one file with no commit boundary between them and no way to separate the results.
-- Record the implementer's identity; fix rounds 1 to 3 resume it.
+- Record the implementer's identity and the model you dispatched it on; fix rounds 1 to 3 resume the one, and rounds 4 and 5 escalate a tier above the other.
 
 ### Report contract
 
@@ -203,7 +205,7 @@ Every round, the implementer re-runs the verification covering the amended code 
 
 The re-review regenerates the package over the same paths, so it sees the whole task again rather than only the fix. It is scoped by the prompt instead: dispatch the re-review block from `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md`, carrying the open findings verbatim. New Critical or Important breakage joins the open findings; anything else it notices goes to the ledger as a deferred minor and never extends the loop.
 
-Append after each round: `Task N: fix round R/5: X addressed, Y open. <one-liners>`.
+Append after each round: `Task N: fix round R/5 (impl: <model>, review: <model>): X addressed, Y open. <one-liners>`.
 
 Never fix findings yourself. Controller fixes skip review and cost you the context you are protecting.
 
@@ -211,7 +213,7 @@ Never fix findings yourself. Controller fixes skip review and cost you the conte
 
 ### Complete the task
 
-Append `Task N: complete: <one-line summary>`. The summary carries the files touched -- the actual set, including anything the scope check added -- and the review outcome, noting any parked findings. The final review's package is built from these lines. Never start the next task while a Critical or Important finding is neither fixed nor parked with a ruling at the cap.
+Append `Task N: complete (impl: <model>, review: <model>): <one-line summary>`. Name the models actually dispatched, not the tier the plan called for; where fix rounds escalated, name the model that finished the task. The summary carries the files touched -- the actual set, including anything the scope check added -- and the review outcome, noting any parked findings. Model selection is a judgment made per dispatch and nothing else records it, so without this the run leaves no evidence of which tier produced which code -- which is what a resumed run escalates from, and what the final review and the user need to know when deciding how far to trust a task. The final review's package is built from these lines. Never start the next task while a Critical or Important finding is neither fixed nor parked with a ruling at the cap.
 
 ## Continuous execution
 
