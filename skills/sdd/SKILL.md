@@ -246,4 +246,8 @@ Report the result in a line. Where a clause did not hold, say which, where, and 
 
 **Make no git mutations at any point in this skill**, and allow none in a dispatched subagent. The repository owner commits.
 
-**End by recommending `lodestar:wrap-up`.** The ledger records what was produced; wrap-up reports the complement -- what is still uncertain, what the user may be overlooking, and what changed without being asked -- which is what they need before reviewing a branch this process built without them. Recommend it and stop. The user decides whether to run it.
+**End with the wrap-up report.** The ledger records what was produced; the wrap-up reports the complement -- what is still uncertain, what the user may be overlooking, and what changed without being asked -- which is what they need before reviewing a branch this process built without them.
+
+Produce it as part of finishing the run, without asking. Follow `${CLAUDE_PLUGIN_ROOT}/skills/wrap-up/SKILL.md` and write it to `docs/lodestar/wrap-up/YYYY-MM-DD-topic-wrap-up.md`, on the same topic as the plan; a location stated by the project or by the user overrides that default.
+
+This skill runs unattended -- that is what Continuous execution is for -- so the user is most likely absent when it finishes. Sections 1 and 2 of that report live only in this session's context, and a return, a compaction, or a new session loses them.

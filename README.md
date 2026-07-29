@@ -8,7 +8,7 @@ A Claude Code plugin holding a small set of development-process skills: work out
 
 ## The skills
 
-Every skill carries `disable-model-invocation: true` and is therefore invoked by slash command only -- `/lodestar:design` and so on. The model cannot load one on its own, and none of them chains into another without you saying so. Work where this process is not explicitly asked for falls to whatever other skills are installed.
+Every skill carries `disable-model-invocation: true` and is therefore invoked by slash command only -- `/lodestar:design` and so on. The model cannot load one on its own, and none of them chains into another without you saying so -- with one exception: `sdd` produces the `wrap-up` report itself when a run completes, since it runs unattended and that report cannot be reconstructed once the session is gone. Work where this process is not explicitly asked for falls to whatever other skills are installed.
 
 - **`/lodestar:brainstorming`** -- Explores an idea that has not taken shape yet and converges on a direction, without writing a spec.
 - **`/lodestar:design`** -- Investigates the codebase against a settled intent, returns a concrete design, and writes it to a spec.
@@ -37,10 +37,10 @@ Every skill carries `disable-model-invocation: true` and is therefore invoked by
 1. **`brainstorming`**, when the question is still what to build or whether to. Skip it whenever the shape is already clear.
 2. **`design`**, once the intent is settled. It ends by recommending one of the two execution routes and then stops.
 3. **Inline or `sdd`.** A bounded, mechanical change whose context you already hold goes inline; multi-task, parallelizable, or output-heavy work goes to `sdd`. Either route gets one review dispatch before you read the result -- inline is the cheaper path, not the unreviewed one.
-4. **`wrap-up`**, before you review or commit. It reports the complement of a completion summary: what a run leaves unresolved rather than what it produced.
+4. **`wrap-up`**, before you review or commit. It reports the complement of a completion summary: what a run leaves unresolved rather than what it produced. After the `sdd` route it runs on its own and lands in `docs/lodestar/wrap-up/`; after the inline route you invoke it.
 5. **`handoff`**, when the work outlives the session. Also useful earlier, to park a second idea `brainstorming` set aside or a subsystem `design` decomposed out of scope.
 
-Each step stops when it is done and recommends the next. None of them advances without your go-ahead.
+Each step stops when it is done and recommends the next. None of them advances without your go-ahead, save for the `sdd` wrap-up noted above.
 
 ## Supporting files
 

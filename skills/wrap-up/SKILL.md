@@ -40,3 +40,11 @@ Three sections, in this order:
 - Name the file, path, or command wherever one applies.
 
 Report only what is true. A section with one real item is finished at one item. Then stop -- the user will ask if they want more on any of it.
+
+## Delivery
+
+Report in the conversation. Where the invoker names a destination file, write the report there as well, opening with a line naming what it closes out and the absolute date.
+
+Sections 1 and 2 cannot be reconstructed later, so where the user is not present to read the report as it is given, the conversation is the wrong medium for the only part of it that cannot be produced again.
+
+A written report is the same report. The three-item cap is about what a reader can act on, not about what fits, and a file offers exactly the room the cap exists to refuse. Where a report already exists at that path, append a new dated one below it rather than overwriting -- a resumed or re-run job does not resolve the earlier run's uncertainties.
