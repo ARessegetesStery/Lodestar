@@ -18,7 +18,7 @@ If the intent itself turns out to be unsettled -- the question is still what to 
 
 Do this before investigating in depth, so that effort is not spent refining a design that needs to be split first.
 
-If the brief spans several independent subsystems, say so immediately rather than designing all of it. Help the user decompose: name the independent pieces, how they relate, and what order they should be built in. Then design the first piece through the rest of this skill. Each piece gets its own spec.
+If the brief spans several independent subsystems, say so immediately rather than designing all of it. Help the user decompose: name the independent pieces, how they relate, and what order they should be built in. Then design the first piece through the rest of this skill. Each piece gets its own spec. Only make the split when the brief involves large changes and indeed span multiple subsystems: do not split if they just cover different modules of the same subsystem.
 
 For the pieces not being designed now, offer `lodestar:handoff` to capture each as a self-contained prompt, so the decomposition survives this conversation instead of living only in it.
 
