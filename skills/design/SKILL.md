@@ -42,20 +42,19 @@ Where code you are touching has a problem that affects this work -- a file that 
 
 ## Testing decision
 
-This is the implementation's completion criterion. Without it there is no explicit standard for whether the work passed or failed, so it belongs in the design rather than downstream of it.
-
-Settle it before writing the spec, not after. Deciding what completion gates on while the design is still moving lets the design change in response; deciding afterward tends to produce tests fitted to whatever got built.
+This is the implementation's completion criterion: without it there is no explicit standard for whether the work passed or failed. Settle it while the design is still moving, so the design can change in response; settled afterward, tests get fitted to whatever was built.
 
 Work out and then present, as its own numbered section of the design:
 
 - **What is covered.** Which behaviors get automated tests, and at which level -- unit at a named boundary, integration across a named seam, end-to-end through a named entry point.
 - **What form.** The framework, where the tests live by path, and the exact command that runs them.
 - **What passing means.** What a green run looks like, and what completion of the work therefore gates on.
+- **Whether it will pass.** Predict each criterion's outcome before the work exists; where it turns on a quantity, put a number on it and show the number clears. A criterion you cannot predict, or whose outcome turns on something this work does not produce, is not a completion criterion for this work -- and that is a design finding, not a gap to paper over.
 - **Error and edge cases.** Walk them deliberately rather than asserting coverage in general terms: invalid input, absent or malformed state, boundary values, failure of anything the code depends on, and concurrent or repeated invocation where those apply. Name the ones the tests will cover, and name the ones they will not along with why. A short honest list beats a claim of full coverage.
 
 Where the choice is genuinely open, present it as a decision with options. Where the project's conventions already settle it, state what they settle and move on.
 
-Not every change is usefully gated on a test. A configuration edit, a documentation change, or a throwaway probe may not be. Where that is the case, say so and say why, rather than inventing a test to fill the section. The point is that the question is answered on purpose and visibly, not that every change acquires a test.
+Not every change is usefully gated on a test. A configuration edit, a documentation change, or a throwaway probe may not be. Where that is the case, say so and say why, rather than inventing a test to fill the section; the question gets answered on purpose either way.
 
 ## Question policy
 
@@ -68,7 +67,7 @@ Not every change is usefully gated on a test. A configuration edit, a documentat
 
 - Present the design in the conversation, before writing any file. The spec is written up from a design the user has already approved; it is not the vehicle for showing them one.
 - Present it at once, organized into whatever sections the design naturally has, each sized to its content. The eight-section structure below governs the written spec, not this conversation.
-- Where the design is large, splitting the presentation across several messages is fine for readability. That is a formatting choice and carries no approval gate: no section-by-section sign-off, the user reviews the whole thing.
+- Where the design is large, splitting the presentation across several messages is fine for readability. That is a formatting choice, not an approval gate: no section-by-section sign-off.
 - Wait for approval before writing anything. If the user asks for changes, revise and present again.
 
 ## Writing the spec
@@ -85,7 +84,7 @@ These sections, in this order. Size each to its content. Where one genuinely doe
 4. **Components.** Each unit: what it does, its interface, what it depends on, and the files it lives in by path.
 5. **Data flow.** How information moves between the components, and the states it passes through.
 6. **Error handling.** The failure modes, what happens in each, and what surfaces to the user.
-7. **Testing.** The testing decision, written out concretely: what is covered and at what level, the framework and test paths, the exact commands, and the error and edge cases -- both those covered and those deliberately not.
+7. **Testing.** The testing decision, written out concretely: what is covered and at what level, the framework and test paths, the exact commands, the predicted outcome of each criterion with the numbers behind it, and the error and edge cases -- both those covered and those deliberately not.
 8. **Non-goals.** Adjacent work a reader would plausibly assume is included, stated as excluded, each with a one-line reason or the name of what owns it instead. Only things someone could reasonably have assumed; exclusions nobody would have expected are padding.
 
 Write the whole spec for a reader with no conversation context: no shorthand, absolute dates, everything named by path.
@@ -101,7 +100,7 @@ Then self-review the written spec once, checking for:
 - Requirements that are ambiguous to a reader with no conversation context.
 - Scope creep beyond what the user approved.
 
-Fix what you find inline. Then dispatch one reviewer to read the written spec cold and report on four things: anything left incomplete or vague, sections that contradict each other, requirements a reader could take two ways, and anything included that nobody asked for. Tell it to flag only what would cause a real problem later, and to leave wording preferences alone. This is not a gate -- act on what comes back and carry on.
+Fix what you find inline. Then dispatch one reviewer to read the written spec cold, for those same four checks plus the one you cannot perform on your own work: any claim about how the system will behave that rests on no number. A spec can be flawlessly self-consistent about a false premise -- asserting it in three places reads as settling it -- so consistency checking rewards it, and the author is the worst-placed reader to catch that. Tell it to flag only what would cause a real problem later, and to leave wording preferences alone. This is not a gate -- act on what comes back and carry on.
 
 Name the model explicitly on this dispatch and on the review in Terminal state below, since an omitted model inherits this session's; the tiering policy is under Model selection in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/SKILL.md`.
 

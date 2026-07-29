@@ -52,7 +52,7 @@ Head each task `### Task N: <name>`, in exactly that form -- the task-brief scri
 - **Interfaces.** *Consumes*: what this task uses from earlier tasks, with exact signatures. *Produces*: what later tasks rely on -- exact names, parameter and return types. An implementer sees only its own task, so without this block two capable subagents will pick two different names for the same thing.
 - **The change**, described concretely: what to do, not a direction to head in.
 - **Context** the implementer needs: docs to read, project conventions that apply, known gotchas.
-- **Verification**: the exact commands or tests, written out.
+- **Verification**: the exact commands or tests, written out, each one a check on something this task produces. A gate that turns on behaviour the task does not own cannot tell you whether the task succeeded.
 - **Non-goals** wherever scope could bleed into a neighbouring task.
 
 Sizing note: describe the change, do not transcribe it. Literal implementation code in the plan writes the work twice and pins implementers to the cheapest tier -- see Model selection.
@@ -69,7 +69,7 @@ Read the plan once against the spec:
 2. **Placeholders.** Scan for the patterns above.
 3. **Interface consistency.** Do the names, signatures, and types used in later tasks match what earlier tasks produce?
 
-Fix what you find inline. Then dispatch one reviewer to read the plan cold, with the spec where there is one, and report back on two things: whether an engineer could follow each task without getting stuck, and whether any spec requirement has no task. This is not a gate -- you act on what comes back and carry on -- but you wrote the plan, so you are the worst judge of whether its descriptions are followable, and these plans describe the work rather than contain it.
+Fix what you find inline. Then dispatch one reviewer to read the plan cold, with the spec where there is one, and report back on three things: whether an engineer could follow each task without getting stuck, whether any spec requirement has no task, and whether any task's verification could fail for a reason that task does not control. This is not a gate -- you act on what comes back and carry on -- but you wrote the plan, so you are the worst judge of whether its descriptions are followable, and these plans describe the work rather than contain it.
 
 Then proceed to execution.
 
