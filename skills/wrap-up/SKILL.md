@@ -31,6 +31,8 @@ Three sections, in this order:
 
 **3. Not explicitly asked for** -- changes made on your own initiative. Files touched beyond the stated scope, refactors folded into a task, dependencies added, defaults chosen where the request was silent.
 
+**4. User-side action/verification** -- instructions on what the user should do to verify what is implemented in this session.
+
 ## Shape
 
 - Each section holds at most three items. Zero is a valid count, and `None` is a complete section.
