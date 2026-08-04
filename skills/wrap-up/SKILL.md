@@ -10,6 +10,8 @@ disable-model-invocation: true
 
 A short report that closes out a session. It surfaces what a completion summary hides: what is still uncertain, what the user is not accounting for, and what changed without being asked for.
 
+It is a complement, so it presumes its other half. Where no account of the work has been given -- what shipped, what was verified, and with what result -- give that first and this report after it. Delivered alone, a list of caveats leaves the reader assembling the thing being caveated, and a reader who cannot see the work reads an unqualified set of doubts as the whole of it.
+
 This is a reflection, not a review. Do not re-derive the work, re-read the codebase, or diff the branch to find out what happened. Verifying the work is a separate job with separate instruments, and running it here turns a few seconds of reading into a full recheck. Fix nothing, start nothing, commit nothing.
 
 ## What to draw on
@@ -35,18 +37,18 @@ Three sections, in this order:
 
 ## Shape
 
-- Each section holds at most three items. Zero is a valid count, and `None` is a complete section.
+- Each section holds at most three items, and the cap governs these sections rather than whatever report precedes them. Zero is a valid count, one is a finished section, and `None` is complete.
 - Most consequential first.
 - Where more than three real items exist, give the three that matter most and close the section with a line saying how many were left out and where they are recorded. A cap that truncates silently reads exactly like having little to report.
 - One line per item. No sub-bullets, no follow-on sentences.
 - Name the file, path, or command wherever one applies.
 
-Report only what is true. A section with one real item is finished at one item. Then stop -- the user will ask if they want more on any of it.
+Report only what is true, then stop -- the user will ask if they want more on any of it.
 
 ## Delivery
 
 Report in the conversation. Where the invoker names a destination file, write the report there as well, opening with a line naming what it closes out and the absolute date.
 
-Sections 1 and 2 cannot be reconstructed later, so where the user is not present to read the report as it is given, the conversation is the wrong medium for the only part of it that cannot be produced again.
+Where the user is not present to read the report as it is given, the conversation is the wrong medium for sections 1 and 2 -- the only part of it that cannot be produced again.
 
 A written report is the same report. The three-item cap is about what a reader can act on, not about what fits, and a file offers exactly the room the cap exists to refuse. Where a report already exists at that path, append a new dated one below it rather than overwriting -- a resumed or re-run job does not resolve the earlier run's uncertainties.

@@ -79,9 +79,8 @@ Use the least powerful model that can carry each role. Cost and speed both follo
 
 - **Mechanical implementation** -- a single file, a change with no derivation left in it: a fast, cheap model. This tier is narrower than it looks; see Turn count below.
 - **Integration and judgment** -- multi-file coordination, matching an existing pattern, debugging: a standard model.
-- **Architecture and design judgment**, and the final whole-branch review: the most capable model available. The final review is the one dispatch that should never quietly take the session default.
+- **Architecture and design judgment**, and the final whole-branch review: the most capable model available.
 - **Reviews** scale to the diff: size, complexity, and risk. A small mechanical diff does not need the top tier; a subtle concurrency change does.
-- **A task still failing after three fix rounds** goes to a model at least one tier above the one that got stuck, as the fix loop below specifies.
 
 **Name the model explicitly on every dispatch.** An omitted model inherits this session's, which is usually the most capable and most expensive one available, and that silently undoes everything above.
 
@@ -237,7 +236,7 @@ The deferred minors are cleared here or they are not cleared at all. If any is l
 
 ## Completion
 
-**Run the suite over the assembled work.** Every task verified its own slice, at the moment it was written, by the implementer that wrote it. Nothing has yet run the whole thing together, so a task that broke an earlier task's tests has passed every gate up to here. Run the plan's verification strategy over the finished branch and report the result against the baseline recorded at setup. Without this, completion rests on evidence never re-checked after the surrounding code changed.
+**Run the suite over the assembled work.** Every task verified its own slice, at the moment it was written, by the implementer that wrote it. Nothing has yet run the whole thing together, so a task that broke an earlier task's tests has passed every gate up to here. Run the plan's verification strategy over the finished branch and report the result against the baseline recorded at setup. Without this, completion rests on evidence never re-checked after the surrounding code changed. Report the counts themselves and not a verdict on them: a number that reached you in a subagent's return and went no further has not been reported, and "the suite is green" is the form in which a regression against the baseline goes unnoticed.
 
 **Check that the contract held.** You issued it, so you confirm it, and the final reviewer cannot: its package is built from paths inside the repository, so a file written outside one never appears in any package it sees. Read the implementers' reports, whose file lists are the evidence, and check the run against each clause of the contract:
 
@@ -250,6 +249,8 @@ Report the result in a line. Where a clause did not hold, say which, where, and 
 
 **Make no git mutations at any point in this skill**, and allow none in a dispatched subagent. The repository owner commits.
 
+**Report what shipped.** The user watched none of this, and every artifact that records it -- the ledger, the task reports, the review packages -- sits in a scratch area that is gitignored and does not survive. Before the wrap-up, state what the run delivered: what each task produced, taken from the ledger's `Task N: complete` lines rather than re-derived, since those already carry the files touched and the review outcome; and, where the plan's verification produced measurements rather than a verdict, the measurements. The wrap-up that follows is the complement of this, and delivered on its own it leaves the reader assembling the thing being qualified.
+
 **End with the wrap-up report.** The ledger records what was produced; the wrap-up reports the complement -- what is still uncertain, what the user may be overlooking, and what changed without being asked -- which is what they need before reviewing a branch this process built without them. Produce it as part of finishing the run, without asking: follow `${CLAUDE_PLUGIN_ROOT}/skills/wrap-up/SKILL.md` and write it to `docs/lodestar/wrap-up/YYYY-MM-DD-topic-wrap-up.md`, on the same topic as the plan, unless the project or the user states a location.
 
-This skill runs unattended, so the user is most likely absent when it finishes. Sections 1 and 2 of that report live only in this session's context, and a return, a compaction, or a new session loses them.
+This skill runs unattended, so the user is most likely absent when it finishes -- which is the condition under which that report's Delivery section requires a written copy and not only the conversation.
