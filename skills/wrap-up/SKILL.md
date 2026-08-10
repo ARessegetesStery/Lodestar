@@ -25,7 +25,7 @@ Section 3 depends least on memory and most on having noticed at the time. A side
 
 ## The report
 
-Three sections, in this order:
+Four sections, in this order:
 
 **1. Unsure about** -- uncertainty inside the work delivered. Assumptions made without confirmation, paths written but not exercised, places where a plausible alternative reading of the request exists.
 
