@@ -14,7 +14,7 @@ Every skill carries `disable-model-invocation: true` and is therefore invoked by
 - **`/lodestar:design`** -- Investigates the codebase against a settled intent, returns a concrete design, and writes it to a spec.
 - **`/lodestar:sdd`** -- Executes an approved spec or plan through per-task subagents, with a fresh reviewer after each task and a whole-branch review at the end. Also runs plan-only.
 - **`/lodestar:handoff`** -- Drafts a self-contained prompt that a later session, or a different agent, can pick the work up from.
-- **`/lodestar:wrap-up`** -- Reports what is still uncertain, what you may be overlooking, and what changed without being asked.
+- **`/lodestar:wrap-up`** -- Reports what is still uncertain, what you may be overlooking, what changed without being asked, and the state a fresh session needs to review the work cold.
 
 ## Suggested workflow
 
@@ -29,7 +29,7 @@ Every skill carries `disable-model-invocation: true` and is therefore invoked by
         |                 |
         +--------+--------+
                  |
-              wrap-up          uncertainties, blind spots, side changes
+              wrap-up          uncertainties, blind spots, side changes, continuation context
                  |
    (optional) handoff          prompt for the next session
 ```
@@ -37,7 +37,7 @@ Every skill carries `disable-model-invocation: true` and is therefore invoked by
 1. **`brainstorming`**, when the question is still what to build or whether to. Skip it whenever the shape is already clear.
 2. **`design`**, once the intent is settled. It ends by recommending one of the two execution routes and then stops.
 3. **Inline or `sdd`.** A bounded, mechanical change whose context you already hold goes inline; multi-task, parallelizable, or output-heavy work goes to `sdd`. Either route gets one review dispatch before you read the result -- inline is the cheaper path, not the unreviewed one.
-4. **`wrap-up`**, before you review or commit. It reports the complement of a completion summary: what a run leaves unresolved rather than what it produced. After the `sdd` route it runs on its own and lands in `docs/lodestar/wrap-up/`; after the inline route you invoke it.
+4. **`wrap-up`**, before you review or commit. It reports the complement of a completion summary: what a run leaves unresolved rather than what it produced. After the `sdd` route it runs on its own and lands in `docs/lodestar/wrap-up/`; after the inline route you invoke it. Its last section briefs a cold session -- what shipped, where it lives in git, the decisions taken, what is verified -- so the morning after an unattended run you can open a fresh agent on the file instead of reloading a stale conversation; a full standalone prompt is still `handoff`'s job.
 5. **`handoff`**, when the work outlives the session. Also useful earlier, to park a second idea `brainstorming` set aside or a subsystem `design` decomposed out of scope.
 
 Each step stops when it is done and recommends the next. None of them advances without your go-ahead, save for the `sdd` wrap-up noted above.
