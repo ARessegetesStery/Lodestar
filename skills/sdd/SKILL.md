@@ -1,7 +1,7 @@
 ---
 name: sdd
 description: Use when an approved spec or plan is ready to execute through per-task subagents, or when a spec needs an implementation plan written from it; entry points for spec-in, plan-in, and plan-only.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Subagent-driven development

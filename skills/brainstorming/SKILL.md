@@ -1,7 +1,7 @@
 ---
 name: brainstorming
 description: Use before design when the idea has not taken shape yet; explores the problem and converges on a direction, without writing a spec.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Brainstorming

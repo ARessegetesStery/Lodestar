@@ -1,7 +1,7 @@
 ---
 name: handoff
 description: Use when work continues in another session or under another agent; drafts a self-contained prompt the user can hand to the next executor.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Handoff

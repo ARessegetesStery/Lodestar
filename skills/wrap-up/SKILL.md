@@ -1,7 +1,7 @@
 ---
 name: wrap-up
 description: Use at the end of a session, before the user reviews or commits, for a short reflective summary of open uncertainties, blind spots, unrequested changes, and the standing context a fresh session needs to review the work cold.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Wrap-up

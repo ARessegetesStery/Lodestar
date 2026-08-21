@@ -4,11 +4,11 @@ A Claude Code plugin holding a small set of development-process skills: work out
 
 ## Compatibility
 
-**Claude Code only.** The skills are built on Claude Code plugin conventions -- `SKILL.md` frontmatter, `disable-model-invocation`, and `${CLAUDE_PLUGIN_ROOT}` path resolution -- and no other agent harness is supported or tested. The two helper scripts under `skills/sdd/scripts/` are bash, so a bash-capable shell has to be available; on Windows the one shipped with Git for Windows is enough.
+**Claude Code only.** The skills are built on Claude Code plugin conventions -- `SKILL.md` frontmatter and `${CLAUDE_PLUGIN_ROOT}` path resolution -- and no other agent harness is supported or tested. The two helper scripts under `skills/sdd/scripts/` are bash, so a bash-capable shell has to be available; on Windows the one shipped with Git for Windows is enough.
 
 ## The skills
 
-Every skill carries `disable-model-invocation: true` and is therefore invoked by slash command only -- `/lodestar:design` and so on. The model cannot load one on its own, and none of them chains into another without you saying so -- with one exception: `sdd` produces the `wrap-up` report itself when a run completes, since it runs unattended and that report cannot be reconstructed once the session is gone. Work where this process is not explicitly asked for falls to whatever other skills are installed.
+Every skill carries `disable-model-invocation: false`, so each one can be reached two ways: by slash command -- `/lodestar:design` and so on -- or by the model loading it itself when the work at hand matches the skill's description. None of them chains into another without you saying so -- with one exception: `sdd` produces the `wrap-up` report itself when a run completes, since it runs unattended and that report cannot be reconstructed once the session is gone.
 
 - **`/lodestar:brainstorming`** -- Explores an idea that has not taken shape yet and converges on a direction, without writing a spec.
 - **`/lodestar:design`** -- Investigates the codebase against a settled intent, returns a concrete design, and writes it to a spec.

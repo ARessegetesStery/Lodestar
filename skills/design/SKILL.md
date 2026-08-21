@@ -1,7 +1,7 @@
 ---
 name: design
 description: Use when the intent is settled but the design is not; investigates the codebase and returns a concrete design, then writes it to a spec.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Design
