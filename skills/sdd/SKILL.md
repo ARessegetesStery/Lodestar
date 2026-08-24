@@ -52,7 +52,7 @@ Head each task `### Task N: <name>`, in exactly that form -- the task-brief scri
 - **Interfaces.** *Consumes*: what this task uses from earlier tasks, with exact signatures. *Produces*: what later tasks rely on -- exact names, parameter and return types. An implementer sees only its own task, so without this block two capable subagents will pick two different names for the same thing.
 - **The change**, described concretely: what to do, not a direction to head in.
 - **Context** the implementer needs: docs to read, project conventions that apply, known gotchas.
-- **Verification**: the exact commands or tests, written out, each one a check on something this task produces. A gate that turns on behaviour the task does not own cannot tell you whether the task succeeded.
+- **Verification**: the exact commands or tests, written out, each one a check on something this task produces. A gate that turns on behaviour the task does not own cannot tell you whether the task succeeded, and neither can one that cannot go red: where the spec names a falsifying configuration for a criterion, carry it into the task so the check is shown able to fail rather than merely observed passing.
 - **Non-goals** wherever scope could bleed into a neighbouring task.
 
 Sizing note: describe the change, do not transcribe it. Literal implementation code in the plan writes the work twice and pins implementers to the cheapest tier -- see Model selection.
