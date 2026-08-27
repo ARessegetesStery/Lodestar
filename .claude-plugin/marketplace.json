@@ -7,7 +7,7 @@
     {
       "name": "lodestar",
       "source": "./",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "description": "Minimalistic development skill set: idea brainstorming, design-to-spec, subagent-driven development, cross-session handoff, and end-of-work wrap-up."
     }
   ]
