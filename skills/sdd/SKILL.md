@@ -137,9 +137,13 @@ This block goes into the operating rules, pasted, with the report path filled in
 
 **Reporting.** Write your full report to the report file named in your dispatch: what you implemented, what you verified with the exact command and its output, the files you created and modified, your self-review findings, and any concerns.
 
-For each test the task named as its verification, record that you watched it fail before the code existed -- the command, the failing output, and why that failure was the expected one -- and then the passing run afterwards. A test that has never failed has not been shown to test anything.
+**Where the behaviour under test already exists** -- a port, a refactor, an invariant nobody had asserted -- run its test before you change anything and record the result; an unexpected red there is the most informative event in this workflow. Where the code does not exist yet, skip that run and say so: a missing symbol is not a demonstration that the test discriminates, and staging one costs a build cycle to learn nothing.
 
-Before reporting, check your tests against a deliberate small breakage: a wrong constant, the wrong branch taken, a step left out, an empty return. If none of your tests would fail for any of those, they do not cover the behaviour they claim to, and saying so is more useful than reporting a pass. If a reviewer later sends you findings, APPEND your fix report to that same file -- never start a new one -- including the covering tests, the command run, and the output.
+**What certifies a test is a deliberate small breakage:** a wrong constant, the wrong branch taken, a step left out, an empty return. Report one line per breakage -- what you broke, which tests went red, which stayed green. A test no breakage can turn red has not been shown to test anything, so a breakage nothing catches is a finding about your tests rather than a footnote, and saying so is more useful than reporting a pass.
+
+**A failing check is never yours to resolve.** Do not delete it, loosen its tolerance, or redesign its fixture to make it pass. Investigate only far enough to say what the red means, then report it under your concerns and leave it failing: the effort spent explaining a failure away reliably exceeds the cost of escalating it, and a real defect talked away is the most expensive outcome this workflow has.
+
+If a reviewer later sends you findings, APPEND your fix report to that same file -- never start a new one -- including the covering tests, the command run, and the output.
 
 Then reply with ONLY the following, under fifteen lines, because the detail lives in the report file:
 
@@ -249,7 +253,7 @@ Report the result in a line. Where a clause did not hold, say which, where, and 
 
 **Make no git mutations at any point in this skill**, and allow none in a dispatched subagent. The repository owner commits.
 
-**Report what shipped.** The user watched none of this, and every artifact that records it -- the ledger, the task reports, the review packages -- sits in a scratch area that is gitignored and does not survive. Before the wrap-up, state what the run delivered: what each task produced, taken from the ledger's `Task N: complete` lines rather than re-derived, since those already carry the files touched and the review outcome; and, where the plan's verification produced measurements rather than a verdict, the measurements. The wrap-up that follows is the complement of this, and delivered on its own it leaves the reader assembling the thing being qualified.
+**Report what shipped.** The user watched none of this, and every artifact that records it -- the ledger, the task reports, the review packages -- sits in a scratch area that is gitignored and does not survive. Before the wrap-up, state what the run delivered: what each task produced, taken from the ledger's `Task N: complete` lines rather than re-derived, since those already carry the files touched and the review outcome; and, where the plan's verification produced measurements rather than a verdict, the measurements.
 
 **End with the wrap-up report.** The ledger records what was produced; the wrap-up reports the complement -- what is still uncertain, what the user may be overlooking, and what changed without being asked -- which is what they need before reviewing a branch this process built without them. Produce it as part of finishing the run, without asking: follow `${CLAUDE_PLUGIN_ROOT}/skills/wrap-up/SKILL.md` and write it to `docs/lodestar/wrap-up/YYYY-MM-DD-topic-wrap-up.md`, on the same topic as the plan, unless the project or the user states a location.
 
