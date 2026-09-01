@@ -56,6 +56,7 @@ Sections 1 through 4:
 
 - Each holds at most three items, and the cap governs these sections rather than whatever report precedes them. Zero is a valid count, one is a finished section, and `None` is complete.
 - Most consequential first.
+- Name the work by what it is, not by its label elsewhere: "the retry path in the uploader" rather than "Task 4", "resuming an upload after a dropped connection" rather than "the third requirement". The reader has not read the spec or the plan.
 - Where more than three real items exist, give the three that matter most and close the section with a line saying how many were left out and where they are recorded. A cap that truncates silently reads exactly like having little to report.
 - One line per item. No sub-bullets, no follow-on sentences.
 
