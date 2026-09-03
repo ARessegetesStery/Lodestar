@@ -35,7 +35,7 @@ Five sections, in this order:
 
 **3. Not explicitly asked for** -- changes made on your own initiative. Files touched beyond the stated scope, refactors folded into a task, dependencies added, defaults chosen where the request was silent.
 
-**4. User-side action/verification** -- instructions on what the user should do to verify what is implemented in this session.
+**4. User-side action/verification** -- what the user must do to verify what this session implemented. Where the work produced a separate acceptance procedure, which contains the ordered steps someone follows to decide whether the work is done, name it by path and give its first step as a single item. Do not reproduce the full procedure here: it would spend the cap below on steps the reader cannot follow to the end, and they would open the document anyway.
 
 **5. Picking this up cold** -- what a fresh agent needs in order to discuss this work with the user in a session holding none of this one's context. Four labelled entries, in this order:
 
