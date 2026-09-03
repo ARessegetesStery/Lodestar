@@ -66,6 +66,8 @@ What shipped and Where it stands run to a few lines each; Where it lives and Dec
 
 Name the file, path, or command wherever one applies.
 
+Do not break paragraphs across lines: one paragraph is one line, however long, and there is no per-line character limit.
+
 Report only what is true, then stop -- the user will ask if they want more on any of it.
 
 ## Delivery

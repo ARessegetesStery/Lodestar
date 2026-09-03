@@ -88,7 +88,7 @@ These sections, in this order. Where one genuinely does not apply, keep the head
 7. **Testing.** The testing decision written out concretely: coverage and level, framework and test paths, exact commands, the predicted outcome of each criterion with its numbers, the falsifying configuration that turns each criterion red, the break that disables this work's central mechanism and what the whole suite did against it, the part of acceptance only a person can perform, and the error and edge cases both covered and deliberately not.
 8. **Non-goals.** Adjacent work a reader would plausibly assume is included, stated as excluded, each with a one-line reason or the name of what owns it instead. Exclusions nobody would have expected are padding.
 
-Write for a reader with no conversation context: no shorthand, absolute dates, everything named by path. Every claim about the current state -- what a file contains, what pattern exists, what constrains the work -- names the path where it can be checked, so the spec is reviewable against the repository rather than on trust.
+Write for a reader with no conversation context: no shorthand, absolute dates, everything named by path. Every claim about the current state -- what a file contains, what pattern exists, what constrains the work -- names the path where it can be checked, so the spec is reviewable against the repository rather than on trust. Do not break paragraphs across lines: one paragraph is one line, however long, and there is no per-line character limit.
 
 ### Keeping it tight
 

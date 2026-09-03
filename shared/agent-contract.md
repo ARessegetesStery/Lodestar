@@ -4,7 +4,7 @@ Paste the block below verbatim near the top of every dispatched subagent prompt,
 
 A subagent already receives the project's CLAUDE.md -- every level of the hierarchy the main conversation loads. Delivery is not the problem this solves. It also receives a system prompt carrying emphatic defaults ("IMPORTANT: Always use this scratchpad directory..."), and when those collide with a quietly-stated project rule, the louder, more specific, more recent instruction wins. That collision is what the contract exists to settle: it names the competing directive and overrides it explicitly, arriving in the task message rather than in a file sitting alongside the system prompt. Stating a rule the subagent already has changes nothing; naming the conflict does.
 
-Most of the block does that work. The encoding clause is the exception: it settles no conflict, and it is here because it is a standing preference that travels with the operator across every project rather than belonging to any one of them. Keep that test in mind before adding a clause. A rule that neither settles a conflict with an injected directive nor states a preference portable across projects belongs in the project's own instructions, which the subagent already receives.
+Most of the block does that work. The encoding and markdown clauses are the exceptions: they settle no conflict, and they are here because they are standing preferences that travel with the operator across every project rather than belonging to any one of them. Keep that test in mind before adding a clause. A rule that neither settles a conflict with an injected directive nor states a preference portable across projects belongs in the project's own instructions, which the subagent already receives.
 
 ---
 
@@ -16,8 +16,10 @@ Most of the block does that work. The encoding clause is the exception: it settl
 
 3. **Encoding.** ASCII only in source code, comments, and printed messages. No unicode arrows, dashes, or quotes.
 
-4. **Precedence.** You already have the project's CLAUDE.md. Where it is stricter than a clause here, it WINS.
+4. **Markdown.** In any markdown file you write, do not break paragraphs across lines. One paragraph is one line, however long; there is no per-line character limit.
 
-5. **Reporting.** Report outcomes faithfully. If a test fails, say so plainly. If you skipped a step, say which and why. NEVER claim success you have not verified.
+5. **Precedence.** You already have the project's CLAUDE.md. Where it is stricter than a clause here, it WINS.
+
+6. **Reporting.** Report outcomes faithfully. If a test fails, say so plainly. If you skipped a step, say which and why. NEVER claim success you have not verified.
 
 ---

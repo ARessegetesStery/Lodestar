@@ -26,7 +26,7 @@ If while planning the work collapses to a few bounded edits, say so and recommen
 
 Write it to `docs/lodestar/plan/YYYY-MM-DD-topic-plan.md`. That is the default; a location or naming convention stated by the project or by the user overrides it.
 
-Write the whole plan for a reader with zero conversation context: no shorthand, no relative dates, everything named by path.
+Write the whole plan for a reader with zero conversation context: no shorthand, no relative dates, everything named by path. Do not break paragraphs across lines: one paragraph is one line, however long, and there is no per-line character limit.
 
 **Scope check.** If the spec covers several independent subsystems, say so and recommend one plan per subsystem. Each plan should produce working, verifiable software on its own.
 

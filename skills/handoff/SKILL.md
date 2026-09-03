@@ -58,6 +58,7 @@ In this order:
 - Everything named by path.
 - Anchor on names, not line numbers. A handoff is read later by definition, and line numbers decay fastest in exactly the files the work is about to change. Name the function, class, or a string to search for. Give a line number only as a secondary hint, marked approximate.
 - Date every claim about current state, so a stale one can be recognized as stale rather than trusted.
+- No hard-wrapped paragraphs. One paragraph is one line, however long; there is no per-line character limit.
 - Assume the executor cannot see this session and cannot ask you a question.
 
 ## Delivery
