@@ -4,11 +4,11 @@ A Claude Code plugin holding a small set of development-process skills: work out
 
 ## Compatibility
 
-**Claude Code only.** The skills are built on Claude Code plugin conventions -- `SKILL.md` frontmatter and `${CLAUDE_PLUGIN_ROOT}` path resolution -- and no other agent harness is supported or tested. The two helper scripts under `skills/sdd/scripts/` are bash, so a bash-capable shell has to be available; on Windows the one shipped with Git for Windows is enough.
+**Claude Code and Codex.** Claude Code loads the canonical skill files as a plugin. Codex discovers the corresponding entry points under `.agents/skills/`; each entry point loads the same canonical file and resolves `${CLAUDE_PLUGIN_ROOT}` against this repository. The original Claude Code files remain the source of truth. The SDD helpers have PowerShell equivalents for Codex environments without Bash.
 
 ## The skills
 
-Every skill carries `disable-model-invocation: false`, so each one can be reached two ways: by slash command -- `/lodestar:design` and so on -- or by the model loading it itself when the work at hand matches the skill's description. None of them chains into another without you saying so -- with one exception: `sdd` produces the `wrap-up` report itself when a run completes, since it runs unattended and that report cannot be reconstructed once the session is gone.
+In Claude Code, every skill carries `disable-model-invocation: false`, so each one can be reached by slash command -- `/lodestar:design` and so on -- or by the model loading it itself when the work at hand matches the skill's description. In Codex, use `$lodestar-design`, `$lodestar-sdd`, and the other `lodestar-*` names, or let Codex select them from their descriptions. None of them chains into another without you saying so -- with one exception: `sdd` produces the `wrap-up` report itself when a run completes, since it runs unattended and that report cannot be reconstructed once the session is gone.
 
 - **`/lodestar:brainstorming`** -- Explores an idea that has not taken shape yet and converges on a direction, without writing a spec.
 - **`/lodestar:design`** -- Investigates the codebase against a settled intent, returns a concrete design, and writes it to a spec.
@@ -46,7 +46,7 @@ Each step stops when it is done and recommends the next. None of them advances w
 
 `shared/agent-contract.md` holds the subagent contract: the block pasted verbatim into every dispatched subagent prompt, and into the prompts `handoff` produces. It is the mechanism by which rules that must beat emphatic injected directives travel in the same channel as those directives. It sits outside `skills/` because two skills use it and neither owns it.
 
-Inside `sdd`, `skills/sdd/reviewer-prompt.md` carries the three review dispatch blocks -- task, fix round, whole branch -- and `skills/sdd/scripts/` holds two bash helpers: `review-package`, which builds a path-scoped review package from an uncommitted working tree, and `task-brief`, which extracts one task's text from a plan. Skills reference all of these through `${CLAUDE_PLUGIN_ROOT}`, which Claude Code substitutes with the plugin's install directory.
+Inside `sdd`, `skills/sdd/reviewer-prompt.md` carries the three review dispatch blocks -- task, fix round, whole branch -- and `skills/sdd/scripts/` holds two bash helpers: `review-package`, which builds a path-scoped review package from an uncommitted working tree, and `task-brief`, which extracts one task's text from a plan. Claude Code resolves these through `${CLAUDE_PLUGIN_ROOT}`. Codex entry points resolve the same references from the repository root and provide PowerShell equivalents at `.agents/skills/lodestar-sdd/scripts/` when Bash is unavailable.
 
 ## Install
 
@@ -64,6 +64,12 @@ For iterating on the skills themselves, load the directory live instead, which s
 ```
 claude --plugin-dir /path/to/Lodestar
 ```
+
+## Use with Codex
+
+Open this repository in Codex. Codex scans `.agents/skills` between the current working directory and the repository root, so the Lodestar skills are available automatically. Invoke a skill with `$lodestar-brainstorming`, `$lodestar-design`, `$lodestar-sdd`, `$lodestar-handoff`, or `$lodestar-wrap-up`; Codex can also select one when its description matches the task.
+
+The Codex entry points load the canonical files in `skills/`, so there is one set of process instructions for both hosts. On systems without Bash, the SDD entry point directs Codex to its PowerShell helper equivalents.
 
 The version is declared in both `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`; a release bumps the two together.
 
