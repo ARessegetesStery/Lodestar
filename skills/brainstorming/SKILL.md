@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: Use before design when the idea has not taken shape yet; explores the problem and converges on a direction, without writing a spec.
+description: Use before design or campaign when the idea has not taken shape yet; explores the problem and converges on a direction, without writing a spec.
 disable-model-invocation: false
 ---
 
@@ -8,7 +8,7 @@ disable-model-invocation: false
 
 ## Purpose
 
-For an idea that has not taken shape yet. Something should be built; what it is, is the open question. Once the direction is settled, `lodestar:design` takes it from there. This stage is optional, and skipping it is right whenever the shape is already clear.
+For an idea that has not taken shape yet. Something should be built; what it is, is the open question. Once the direction is settled, `lodestar:design` takes it from there -- or `lodestar:campaign`, where whether or how the direction works has to be found by experiment. This stage is optional, and skipping it is right whenever the shape is already clear.
 
 The idea turning out not to be worth building is one of the outcomes, not the purpose.
 
@@ -53,6 +53,6 @@ An idea that cannot yet answer these does not need approaches proposed at it. It
 
 ## Terminal state
 
-End with where the thinking landed and a one-line recommendation: drop it, keep exploring, or take it to `lodestar:design`. The last is the right call as soon as the direction is concrete enough to implement against -- including when that turns out to be true early, in which case say so and stop rather than continuing to explore a question that is already answered.
+End with where the thinking landed and a one-line recommendation: drop it, keep exploring, take it to `lodestar:design`, or take it to `lodestar:campaign`. Design is the route when the direction is clear in theory and what remains is to build it; campaign is the route when the direction is set but whether or how it works can only be found by experiment -- which of several methods holds up, whether an approach survives contact with real inputs. Either is the right call as soon as the direction is concrete enough to act on -- including when that turns out to be true early, in which case say so and stop rather than continuing to explore a question that is already answered.
 
 This stage produces a direction, not artifacts. Write no spec, no code, and no files in the project unless the user asks. Then stop, and do not invoke another skill without the user's go-ahead.

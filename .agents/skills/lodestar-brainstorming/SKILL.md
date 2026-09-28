@@ -1,6 +1,6 @@
 ---
 name: lodestar-brainstorming
-description: Use before design when an idea has not taken shape yet; explore the problem and converge on a direction without writing a spec.
+description: Use before design or campaign when an idea has not taken shape yet; explore the problem and converge on a direction without writing a spec.
 ---
 
 # Lodestar: Brainstorming

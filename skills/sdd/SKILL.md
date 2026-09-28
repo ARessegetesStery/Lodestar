@@ -18,6 +18,8 @@ Subagents inherit none of this session's context, so you construct exactly what 
 - **Plan in hand.** Skip planning. Run the execution loop against the given plan file.
 - **Plan only.** Write the plan and stop, typically to hand it to another session or agent.
 
+Spec in hand and plan in hand open with the dispatch question under Model selection, before anything is dispatched, unless this plan's ledger already records an answer. Plan only dispatches a single reviewer, and uses the tiering below unless the user says otherwise.
+
 ## Scale escape hatch
 
 If while planning the work collapses to a few bounded edits, say so and recommend inline implementation. Do not run the loop on work that does not need it.
@@ -75,6 +77,16 @@ Then proceed to execution.
 
 ## Model selection
 
+### The dispatch question
+
+Before the first dispatch of a run, ask the user which applies: the tiering policy below; one model they name for every dispatch; or models they name per role -- implementer, reviewer, final reviewer. Skip the question only where the invocation already answers it, or, on a resume, the ledger records it. Models change faster than this skill does, and the user may know the current ones better than a policy written against an earlier generation of them. The question costs one exchange at the one moment the user is sure to be present; a wrong tier costs every dispatch of a run they are not there to watch.
+
+Record the answer in the ledger's standing section, in the user's words, when the ledger is created. It binds every dispatch of the run, including the final review, wherever this skill names a tier; it survives compaction; and a resumed run reads it there rather than asking again. Whichever answer is given, the rule below on naming the model still holds: an answer of "the policy" is carried out by naming each tier's model on its dispatch, not by omitting the model. Where the answer fixes a role's model -- one model named for every dispatch, or one named for that role -- every escalation this skill makes by tier still happens, on that same model: the fix loop's rounds 4 and 5 dispatch a fresh implementer, and a BLOCKED reasoning problem is re-dispatched to a fresh agent.
+
+`lodestar:campaign`, `lodestar:consolidate`, and the inline route out of `lodestar:design` ask this same question at the start of their runs, and point here for it. Each one maps its own dispatches onto the three roles, so a per-role answer covers them.
+
+### The tiering policy
+
 Use the least powerful model that can carry each role. Cost and speed both follow from this, and the ceiling is rarely the bottleneck.
 
 - **Mechanical implementation** -- a single file, a change with no derivation left in it: a fast, cheap model. This tier is narrower than it looks; see Turn count below.
@@ -98,7 +110,7 @@ Look for one at that path before creating it. If its first line names this plan,
 
 Two things about resuming that the ledger cannot supply. If the previous run stopped, the user resolved whatever stopped it in a conversation you cannot see, so wait for them to state that resolution rather than inferring one from the ledger's account of the problem. And where the run stopped at or just after a task whose verification gates the work that follows, re-run that verification before continuing: a gate recorded as passed by a run that then halted is the one result least safe to take on trust.
 
-Conversation memory does not survive compaction, and a controller that has lost its place re-dispatches work already done. The ledger is the recovery map: trust it over your own recollection. It opens with a standing section carrying the plan and spec paths, which governs on a plan-versus-spec conflict, the execution mode, and any hard rules for the run. Append to that section whenever the user issues a directive mid-run -- dated, in their words -- because those bind every later task and nothing else records them.
+Conversation memory does not survive compaction, and a controller that has lost its place re-dispatches work already done. The ledger is the recovery map: trust it over your own recollection. It opens with a standing section carrying the plan and spec paths, which governs on a plan-versus-spec conflict, the execution mode, the answer to the dispatch question, and any hard rules for the run. Append to that section whenever the user issues a directive mid-run -- dated, in their words -- because those bind every later task and nothing else records them.
 
 Below that section, before the first dispatch, write the **task list**: one line per task in the plan, `Task N: <name> -- <one-line summary of what it delivers>`. Progress lines append underneath it. Without it the ledger records only what is finished: a controller can see where the run stopped but not how much remains, and would have to re-read the plan to find out.
 
@@ -110,7 +122,7 @@ On a **resumed run**, the tree is expected to carry the completed tasks' output 
 
 A clean tree is not a working one. Run the plan's verification strategy once before Task 1 and record the result in the ledger. A failure that was already there makes every later failure ambiguous, and the first task to touch that area burns fix rounds on someone else's bug. Report a red baseline and let the user decide whether to proceed past it.
 
-**Operating rules.** Before the first dispatch, assemble `<workspace>/operating-rules.md`: the agent contract from `${CLAUDE_PLUGIN_ROOT}/shared/agent-contract.md` -- the fenced block only, not the file's opening paragraph, which addresses you -- followed by this project's own rules, its testing and environment conventions, and the report contract below. The contract is the portable part; the project supplies the rest. Every implementer dispatch carries this file's contents, pasted, and never merely referenced. Reviewers get their constraints from the review blocks and the plan's Global Constraints instead; the report contract in this file is written for an implementer and does not apply to them.
+**Operating rules.** Before the first dispatch, assemble `<workspace>/operating-rules.md`: the agent contract from `${CLAUDE_PLUGIN_ROOT}/shared/agent-contract.md` -- the block between its horizontal rules only, not the file's opening paragraph, which addresses you -- followed by this project's own rules, its testing and environment conventions, and the report contract below. The contract is the portable part; the project supplies the rest. Every implementer dispatch carries this file's contents, pasted, and never merely referenced. Reviewers get their constraints from the review blocks and the plan's Global Constraints instead; the report contract in this file is written for an implementer and does not apply to them.
 
 Keep it live. When a task or a review surfaces a fact that binds more than the task it was found in -- a convention, an ordering requirement, a property of the build, how the test harness signals failure -- append it here rather than only carrying it into the next dispatch. Threaded by hand it reaches one implementer; recorded here it reaches every later one without being asked for.
 

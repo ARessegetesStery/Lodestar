@@ -1,7 +1,7 @@
 {
   "name": "lodestar",
-  "version": "0.7.1",
-  "description": "Minimalistic development skill set: idea brainstorming, design-to-spec, subagent-driven development, cross-session handoff, end-of-work wrap-up, and commit planning.",
+  "version": "0.8.0",
+  "description": "Minimalistic development skill set: idea brainstorming, design-to-spec, experiment campaigns and their consolidation, subagent-driven development, cross-session handoff, end-of-work wrap-up, and commit planning.",
   "author": {
     "name": "Arias Stery"
   }

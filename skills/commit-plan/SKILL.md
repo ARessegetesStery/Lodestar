@@ -41,6 +41,8 @@ Each commit gets a subject line and nothing else: no body, no description, and n
 
 Write the subject in the repository's convention, as read from the history: the same prefixes and the same tense. Keep the subject to roughly 50 characters and never more than 60, whatever length the history runs to. Describe what the commit contains, not how it was produced; the vocabulary of the session or plan that produced it means nothing to a reader of the log unless the history already uses it.
 
+**One prefix is Lodestar's own.** When the tree holds a `lodestar:campaign`'s close -- its report (under `docs/lodestar/campaign/` by default) is among the uncommitted files, or the invocation says so -- the campaign's code takes the prefix `exp:`, whatever the history uses. That is every file the report's consolidation items name, including changes the user ordered kept, since those too still await their production form. `lodestar:consolidate` confirms the checkpoint by the prefix, and a reader of the log can tell code awaiting consolidation from code that shipped. The campaign's records -- charter, report, wrap-up, durable records and the scripts the report cites, as the campaign skill's Layout defines them -- take the history's own prefixes.
+
 ## The commands
 
 For each commit:
