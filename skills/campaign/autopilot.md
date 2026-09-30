@@ -2,7 +2,7 @@
 
 This file holds the autopilot phase of `lodestar:campaign`, read when the skill is invoked with a charter. It relies on `SKILL.md` beside it for the claim tiers, the decision rules and the layout, which the charter sets and consolidation relies on as well.
 
-The user is present when the autopilot starts and very likely absent from then on. Everything that needs them is asked in one message at the start; after that, the run does not stop to ask.
+The user is present when the autopilot starts and very likely absent from then on. Everything that needs them is asked in one message at the start; after that, the run does not stop to ask until the loop ends (Go-ahead).
 
 ## Start
 
@@ -11,9 +11,9 @@ Before anything is dispatched, check and ask, in one message:
 - **The dispatch question** under Model selection in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/SKILL.md`, unless the invocation already answers it. This skill's roles map onto the question's: implementers to the implementer role; implementation reviews, numbers reviews and every re-review to the reviewer role; the closing review to the final-reviewer role.
 - **The baseline.** `git status --porcelain` shows nothing but the charter itself, and HEAD is the commit the charter's Starting state names, or a later one whose only change since is the charter (Setup says why). If not, say what is outstanding.
 - **The workspace.** It is git-ignored (`git check-ignore <path>`). If not, settle its location.
-- **The pre-flight scan.** Read the charter once for anything that cannot be run as written: a bar with no inputs, contradictory moves, a run protocol that names something absent, a budget that cannot hold its own closing reservation, a deliverable the rule for durable records excludes (Layout, in `SKILL.md`), such as a record per experiment. Put each finding beside the charter text it concerns and ask how it resolves. If the scan is clean, say nothing about it.
+- **The pre-flight scan.** Read the charter once for anything that cannot be run as written: a bar with no inputs, contradictory moves, a run protocol that names something absent, a deliverable the rule for durable records excludes (Layout, in `SKILL.md`), such as a record per experiment. Put each finding beside the charter text it concerns and ask how it resolves. If the scan is clean, say nothing about it.
 
-Wait for the answer. A resolution that changes the charter is appended to its Amendments section. Then run unattended to the end. A resume replaces this message with the resume check under Resuming.
+Wait for the answer. A resolution that changes the charter is appended to its Amendments section. Then run unattended to the go-ahead. A resume replaces this message with the resume check under Resuming.
 
 ## Setup
 
@@ -21,7 +21,7 @@ In this order, so that every run setup makes is inside the budget and in the reg
 
 **Workspace.** At its Layout location (`SKILL.md`). Everything for the run lives here: the ledger, the operating rules, briefs, implementer reports, review packages, snapshots, code states, analysis scripts and raw run output.
 
-**Clock.** Read the time with `date`, and record the start, the deadline, and the closing time -- the deadline less the closing reservation -- in the ledger created next. Every later timestamp comes from `date` as well. Estimated times drift by hours over a long run, and the closing pass is the part that pays for the drift.
+**Clock.** Read the time with `date`, and record the start and the deadline in the ledger created next. Every later timestamp comes from `date` as well. Estimated times drift by hours over a long run, and a deadline read against them is overrun without anyone noticing.
 
 **Ledger.** Create `<workspace>/ledger.md` from `${CLAUDE_PLUGIN_ROOT}/skills/campaign/ledger-skeleton.md` (The ledger, below), with the charter path on its first line, and the dispatch answer, the start-message resolutions and the clock in its standing section.
 
@@ -37,9 +37,9 @@ In this order, so that every run setup makes is inside the budget and in the reg
 
 **Suite baseline.** Where the project has a test suite, run it once on the starting code, with the command the charter names, and record the counts. The closing pass runs it again on the final code, and a failure that was already present at the start is otherwise indistinguishable from one the campaign caused.
 
-**The red run.** Before the first experiment, run the bar on the configuration the charter predicts fails, and record the result against the prediction. It shows the bar can fail; it checks that the instruments work before anything depends on them; and it measures the cost of one run, which is what the closing reservation was sized from. If a run costs more than the charter assumed, move the closing time earlier to keep the reservation whole. The autopilot may move the closing time earlier, never later: a later closing time is a budget extension, which is the user's.
+**The red run.** Before the first experiment, run the bar on the configuration the charter predicts fails, and record the result against the prediction. It shows the bar can fail; it checks that the instruments work before anything depends on them; and it measures the cost of one run, which the closing pass's estimate is sized from (Go-ahead). The autopilot never moves the deadline later: that is a budget extension, which is the user's.
 
-If the red run passes, the bar cannot fail as written, and changing the bar is the user's. Park that as a question on the bar (Decisions, in `SKILL.md`), and carry on only with work that does not depend on the bar's verdict -- instruments, and mechanism probes whose readings stand on their own -- and the report leads with it. Where one run of the bar is short, run the red run before sending the start message instead, once the baseline and workspace checks pass, with its output in the workspace and its registry row written when the ledger is created: a bar unable to fail then reaches the user while they are still present to change it.
+If the red run passes, the bar cannot fail as written, and changing the bar is the user's. Park that as a question on the bar (Decisions, in `SKILL.md`), and carry on only with work that does not depend on the bar's verdict -- instruments, and mechanism probes whose readings stand on their own -- and the go-ahead and the report lead with it. Where one run of the bar is short, run the red run before sending the start message instead, once the baseline and workspace checks pass, with its output in the workspace and its registry row written when the ledger is created: a bar unable to fail then reaches the user while they are still present to change it.
 
 ## The ledger
 
@@ -81,11 +81,11 @@ The plan is a queue of hypotheses, re-planned after every result, not a list of 
 5. **Run**, under the charter's run protocol. Register every run: label, timestamp, code state (Experiments), inputs, command, output path, exit status, wall time, and anything anomalous.
 6. **Read.** Record the result against the prediction. A result that contradicts its prediction is the most informative event a campaign has: explain it in the next entry, before anything is built on top of it. Update the claims, and re-plan the queue.
 
-**Spend measurement in proportion to confidence.** Offline probes and short runs to form and kill hypotheses; full-length runs to confirm one. A long run spent on an idea a short probe would have killed is budget the closing pass loses.
+**Spend measurement in proportion to confidence.** Offline probes and short runs to form and kill hypotheses; full-length runs to confirm one. A long run spent on an idea a short probe would have killed is budget the rest of the queue loses.
 
 Within the charter's concurrency limits, run independent lanes side by side -- one experiment's runs while another's code is written or reviewed -- but never let two writers hold one file, and never put other work beside a run the run protocol says must run alone.
 
-**Time limits.** Every run and every dispatched agent has a time limit, written in its registry row or its brief, and taken from the charter's run protocol where it sets one. At expiry, look at what the process is actually doing, not merely whether it is alive -- an idle process looks the same as a busy one to a liveness check -- then stop it and record what was found. A run that silently waits costs the budget the closing pass needs.
+**Time limits.** Every run and every dispatched agent has a time limit, written in its registry row or its brief, and taken from the charter's run protocol where it sets one. At expiry, look at what the process is actually doing, not merely whether it is alive -- an idle process looks the same as a busy one to a liveness check -- then stop it and record what was found. A run that silently waits spends the budget on nothing.
 
 **Background tasks.** Every waiter, queue or watchdog the controller starts is registered in the ledger's standing section with what it waits for, and struck when it ends. Before starting or re-arming one, or re-dispatching on a notification, confirm from the process state that the previous one is gone and that its work did not in fact complete: a notification can be interim, and a re-armed waiter duplicates the queue it watches.
 
@@ -107,27 +107,33 @@ The loop ends at the first of these:
 
 - The question is answered: every outcome in the bar decided on reviewed claims, with only the concluding draws left for the closing pass.
 - A stop condition the charter states is met.
-- The queue is empty and re-planning finds no hypothesis left to test. Log why, and go to the closing pass with the question open.
+- The queue is empty and re-planning finds no hypothesis left to test. Log why; the question stays open.
 - Everything left in the queue depends on a parked question.
-- The closing time arrives. As it approaches, queue nothing that cannot finish before it; work still running at the closing time may finish if the reservation holds it.
-- The environment fails in a way the run protocol cannot recover from. Record what failed, and spend what remains of the budget on the closing pass.
+- The deadline arrives. As it approaches, queue nothing that cannot finish before it; work still running at the deadline is stopped and logged.
+- The environment fails in a way the run protocol cannot recover from. Record what failed, and which closing steps it rules out.
 
-Nothing else ends it. A result that disappoints is a result: record it and re-plan. Continue without progress summaries or check-ins; they cost the user time they asked you to save.
+Nothing else ends it. A result that disappoints is a result: record it and re-plan. Continue without progress summaries or check-ins; they cost the user time they asked you to save. Whatever ends the loop, go to the go-ahead.
+
+## Go-ahead
+
+Report in the conversation what the loop found: the answer so far at its tier, each bar criterion's outcome, what ended the loop, the parked questions, and the queue items not run. Then present the closing pass for this run -- its steps, and which claims get concluding draws on which configurations -- with a time estimate sized from the run and review costs logged so far. Ask whether to try further approaches, under the remaining budget or an extension the user sets, or to close under the estimate, as given or amended. Log the question and wait: whether the search has gone far enough is a judgement the charter could not make in advance.
+
+Log the answer. An extension, or an answer to a parked question, is a charter amendment (Decisions, in `SKILL.md`). Further experiments re-enter the loop, whose next end asks again; on the close, record its start and end from `date` in the standing section.
 
 ## Closing pass
 
-In this order, inside the reservation:
+In this order, inside the approved estimate:
 
 1. **Concluding draws** for the claims the report will conclude on, on the final code, under the charter's replication rule.
 2. **The report** (below), drafted while the concluding draws run and completed once their numbers are in.
 3. **Durable records**, once, for the campaign as a whole (Layout, in `SKILL.md`): its memory entry, and whatever documentation the project's own rules require for what the campaign changed. They include every trap that cost the run time, written where the charter's run protocol lives, so that the next campaign's charter inherits it instead of paying for it again. They are written before the closing review so that the review checks them too: a memory entry is read long after the report, and one that overstates a result misleads every session that loads it.
-4. **The closing review.** Run `git status --porcelain` unscoped first: anything outside the manifest's files, the campaign's records (Layout, in `SKILL.md`) and the workspace is unaccounted for, and the dispatch says so. Then dispatch the closing review block, with a package built by `review-package` over the whole tree (`.`), so that a change the manifest omits is in front of the reviewer rather than hidden by the package's scope. Apply what it finds: corrections to the report and the durable records, and to the ledger by new entries. A Critical finding against code is fixed and goes through the implementation review like any other change, and the numbers the fix affects are re-run where the reservation allows; where it does not, the claims those numbers rest on are demoted, and the report's header says which results predate the fix. After a Critical finding, or any finding that changes the answer, the corrected report and records get a re-review on those findings alone, with the re-review block in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md`, the charter and the report standing in for the brief: a correction written under closing-time pressure is the text least likely to have been read twice. Record the review's outcome in the header.
+4. **The closing review.** Run `git status --porcelain` unscoped first: anything outside the manifest's files, the campaign's records (Layout, in `SKILL.md`) and the workspace is unaccounted for, and the dispatch says so. Then dispatch the closing review block, with a package built by `review-package` over the whole tree (`.`), so that a change the manifest omits is in front of the reviewer rather than hidden by the package's scope. Apply what it finds: corrections to the report and the durable records, and to the ledger by new entries. A Critical finding against code is fixed and goes through the implementation review like any other change, and the numbers the fix affects are re-run where the estimate allows; where it does not, the claims those numbers rest on are demoted, and the report's header says which results predate the fix. After a Critical finding, or any finding that changes the answer, the corrected report and records get a re-review on those findings alone, with the re-review block in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md`, the charter and the report standing in for the brief: a correction written under closing-time pressure is the text least likely to have been read twice. Record the review's outcome in the header.
 5. **Identity** of the switched-off final code against the starting commit (Experiments). It runs after the closing review so that it checks the code the user will commit, whatever the review changed.
-6. **The project's test suite**, where it has one, on the final code with every switch off, run with the command the charter names. The checkpoint the user commits must leave nothing broken for anyone who never turns a switch on. Record both results in the report's header, the suite's counts against the suite baseline. Where either fails and the reservation cannot hold the fix, the header states the failure -- for identity, the comparisons it voids; for the suite, the failing tests by name.
+6. **The project's test suite**, where it has one, on the final code with every switch off, run with the command the charter names. The checkpoint the user commits must leave nothing broken for anyone who never turns a switch on. Record both results in the report's header, the suite's counts against the suite baseline. Where either fails and the estimate cannot hold the fix, the header states the failure -- for identity, the comparisons it voids; for the suite, the failing tests by name.
 7. **The account.** Report in the conversation what the run delivered: the answer at its tier, the report path, and the closing review's outcome. The wrap-up presumes this account is given first.
-8. **Wrap-up.** Follow `${CLAUDE_PLUGIN_ROOT}/skills/wrap-up/SKILL.md`, written to the wrap-up path (Layout, in `SKILL.md`). The run finished unattended, which is the condition under which that skill requires a written copy.
+8. **Wrap-up.** Follow `${CLAUDE_PLUGIN_ROOT}/skills/wrap-up/SKILL.md`, written to the wrap-up path (Layout, in `SKILL.md`). The closing pass ran unattended, which is the condition under which that skill requires a written copy.
 
-If the budget ends before the pass does, the report's header says which steps did not run. That is consolidation's cue to rely less on the report's own verdicts, and it is worth more than a report that reads as finished when it is not.
+If the approved estimate runs out before the pass does, the report's header says which steps did not run. That is consolidation's cue to rely less on the report's own verdicts, and it is worth more than a report that reads as finished when it is not.
 
 ## The report
 
@@ -163,11 +169,11 @@ A charter whose ledger already exists is a resume. The ledger's first line names
 Work through the ledger's resume checklist before launching anything. Then take the start message's place with a resume check, asked in one message while the user is present:
 
 - **The baseline** is not a clean tree: the campaign's own changes are expected in it. It is the manifest's files, the campaign's records (Layout, in `SKILL.md`) and the workspace. Anything `git status --porcelain` shows beyond that set is unaccounted for: report it and let the user say whether it belongs.
-- **The clock.** The deadline recorded at setup stands unless the user moves it, and a move is a charter amendment. If the closing time has already passed, say so and ask whether to go straight to the closing pass or extend the budget. If the deadline itself has passed, the question is theirs to settle before anything runs.
+- **The clock.** The deadline recorded at setup stands unless the user moves it, and a move is a charter amendment. If the log records an unanswered go-ahead, or the deadline has passed with none logged, the go-ahead takes this bullet's place; after a logged go-ahead, state what remains of the closing budget.
 - **The stop.** Whatever stopped the previous run was resolved, if at all, in a conversation you cannot see: wait for the user to state the resolution, as sdd's Setup requires of a resume.
 
 The dispatch answer in the standing section still binds; do not ask it again. Skip what setup already did: the ledger exists and must not be recreated from the skeleton, and the starting code, the noise and reference runs, the suite baseline and the red run are already recorded.
 
 Before re-entering, reconcile the log against the implementer reports, the run registry and the run outputs. Work that finished after the last log entry is logged as recovered, not redone: an interruption routinely lands between a run's completion and its entry, and a log taken at its word re-runs what is already done. A gating result recorded just before the halt is checked before anything builds on it; re-run it only if its outputs are incomplete, since outputs can settle in minutes what a repeated run spends hours on.
 
-Then re-enter at the loop, with the first queue item that is not done, or, if the closing time has passed, at the first closing step the log does not record as done.
+Then re-enter at the loop, with the first queue item that is not done, or, once the log records the user's go-ahead for the closing pass, at the first closing step it does not record as done.

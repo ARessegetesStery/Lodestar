@@ -1,6 +1,6 @@
 ---
 name: lodestar-campaign
-description: Use when the answer is not known in theory and has to be found by experiment; settle a self-contained charter with the user, then run the experiments unattended to a report for consolidation.
+description: Use when the answer is not known in theory and has to be found by experiment; settle a self-contained charter with the user, run the experiments unattended, and on the user's go-ahead close with a report for consolidation.
 ---
 
 # Lodestar: Campaign

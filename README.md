@@ -12,7 +12,7 @@ In Claude Code, every skill but `commit-plan` carries `disable-model-invocation:
 
 - **`/lodestar:brainstorming`** -- Explores an idea that has not taken shape yet and converges on a direction, without writing a spec.
 - **`/lodestar:design`** -- Investigates the codebase against a settled intent, returns a concrete design, and writes it to a spec.
-- **`/lodestar:campaign`** -- For a question only experiment can answer. Settles a self-contained charter with you -- the question, the bar, the moves allowed, the time budget, the decisions it may take alone -- then runs the experiments unattended from that charter to a report, with claims graded by the evidence behind them.
+- **`/lodestar:campaign`** -- For a question only experiment can answer. Settles a self-contained charter with you -- the question, the bar, the moves allowed, the time budget, the decisions it may take alone -- then runs the experiments unattended from that charter, reports back and, on your go-ahead, closes with a report, with claims graded by the evidence behind them.
 - **`/lodestar:consolidate`** -- Follows a checkpointed campaign. Has its results reviewed cold and settles with you whether they are ready to consolidate or need a chained campaign first; once ready, takes your keep-or-discard ruling on each change and each ruling the campaign took on your behalf, and writes the spec that turns the kept changes into production code.
 - **`/lodestar:sdd`** -- Executes an approved spec or plan through per-task subagents, with a fresh reviewer after each task and a whole-branch review at the end. Also runs plan-only.
 - **`/lodestar:handoff`** -- Drafts a self-contained prompt that a later session, or a different agent, can pick the work up from.
@@ -28,7 +28,7 @@ In Claude Code, every skill but `commit-plan` carries `disable-model-invocation:
           |                             |
    clear in theory               needs experiment
           |                             |
-          |                         campaign      charter, then unattended run to a report
+          |                         campaign      charter, unattended run, go-ahead, report
           |                             |
           |                       commit-plan     exp: checkpoint
           |                             |
@@ -49,7 +49,7 @@ In Claude Code, every skill but `commit-plan` carries `disable-model-invocation:
 
 1. **`brainstorming`**, when the question is still what to build or whether to. Skip it whenever the shape is already clear. It ends by recommending `design` or `campaign`, or dropping the idea.
 2. **`design`**, once the intent is settled and the answer is clear in theory. It ends by recommending one of the two execution routes and then stops.
-3. **`campaign`**, when the direction is set but whether or how it works has to be found by experiment. Invoked with nothing, it discusses the question with you and writes a charter that stands alone, then asks whether to compact before the run. Invoked with the charter, it runs unattended to a report, a wrap-up, and experimental code left in the tree behind switches that are off by default.
+3. **`campaign`**, when the direction is set but whether or how it works has to be found by experiment. Invoked with nothing, it discusses the question with you and writes a charter that stands alone, then asks whether to compact before the run. Invoked with the charter, it runs the experiments unattended, reports back and asks whether to keep searching or close, then closes with a report, a wrap-up, and experimental code left in the tree behind switches that are off by default.
 4. **`commit-plan`, then `consolidate`**, after a campaign. You commit the campaign's state as a checkpoint -- `commit-plan` gives its code the `exp:` prefix -- and `consolidate` has the results reviewed cold and asks whether they are ready. If they raised a new question instead, it sends you back to `campaign` for a chained campaign, and the chain is consolidated as a whole when it ends. Once ready, it takes your ruling on each change and writes the spec for the kept ones, recommending an execution route as `design` does.
 5. **Inline or `sdd`.** A bounded, mechanical change whose context you already hold goes inline; multi-task, parallelizable, or output-heavy work goes to `sdd`. Either route gets one review dispatch before you read the result -- inline is the cheaper path, not the unreviewed one.
 6. **`wrap-up`**, before you review or commit. It reports the complement of a completion summary: what a run leaves unresolved rather than what it produced. After the `sdd` route it runs on its own and lands in `docs/lodestar/wrap-up/`; after the inline route you invoke it. Its last section briefs a cold session -- what shipped, where it lives in git, the decisions taken, what is verified -- so the morning after an unattended run you can open a fresh agent on the file instead of reloading a stale conversation; a full standalone prompt is still `handoff`'s job.

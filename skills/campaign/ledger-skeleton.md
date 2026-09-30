@@ -22,7 +22,7 @@ Workspace: `[WORKSPACE PATH]` (scratch, git-ignored). This file is the run's rec
 - Current status: [one line, updated in place: what is running, what is next, the newest result].
 - Background tasks: [every waiter, queue or watchdog the controller has started, with what it waits for; struck when it ends].
 - Charter: `[CHARTER PATH]`. Starting commit, HEAD at setup: `[SHA]`. Starting code kept at: `[WORKSPACE PATH]/[PATH OF THE BUILD OR EXPORT]`, replaced by a re-based copy when an ordered-kept change lands.
-- Clock, from `date`: start [TIME], deadline [TIME], closing time [TIME].
+- Clock, from `date`: start [TIME], deadline [TIME]. Closing pass: approved [DURATION], start [TIME], end [TIME].
 - Dispatch: [the user's answer to the dispatch question, verbatim].
 - Start-message resolutions: [each dated, verbatim].
 - Directives mid-run: [each dated and verbatim, with the reading beside it and whether the user has ratified it].
@@ -69,7 +69,7 @@ Workspace: `[WORKSPACE PATH]` (scratch, git-ignored). This file is the run's rec
 
 ## 8. Log
 
-(One heading per entry, in this form, so an entry can be found by grep. Kinds: setup, brief, implementation, review, run, reading, claim, retraction, ruling, parked, directive, amendment, correction, recovered, closing. A brief carries the fields of The loop's step 2 in `autopilot.md`. A claim entry names the evidence that moves the claim. A correction names the entry it corrects. A retraction lists everything that rested on the retracted claim. A recovered entry logs work a resume found finished but unlogged.)
+(One heading per entry, in this form, so an entry can be found by grep. Kinds: setup, brief, implementation, review, run, reading, claim, retraction, ruling, parked, directive, amendment, correction, recovered, go-ahead, closing. A brief carries the fields of The loop's step 2 in `autopilot.md`. A claim entry names the evidence that moves the claim. A correction names the entry it corrects. A retraction lists everything that rested on the retracted claim. A recovered entry logs work a resume found finished but unlogged.)
 
 ### [YYYY-MM-DD HH:MM] entry [N] -- [kind]: [title]
 
