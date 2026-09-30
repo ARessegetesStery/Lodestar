@@ -12,7 +12,7 @@ The user commits their own work, after their own review pass. This skill turns a
 
 Instructions given with the invocation take precedence over everything below; where the user fixes the number of commits, excludes files, or supplies a subject, that settles the question outright.
 
-Unless the invocation already names one, open by asking the user whether they want the commands for a POSIX shell or for Windows PowerShell, and write them for that shell.
+Unless the invocation already names one, open by asking the user whether they want the commands for a Unix shell (bash, zsh, fish) or for Windows PowerShell, and write them for that shell.
 
 ## What to read
 
@@ -48,14 +48,17 @@ Write the subject in the repository's convention, as read from the history: the 
 For each commit:
 
 ```
-git add -A -- "path/one" "path/two"
-git commit -m "subject"
+git add -A -- "path/one" "path/two" &&
+git commit -m "subject" &&
 ```
+
+For a Unix shell, every command ends in `&&` except the closing `git status --short`, a `git reset -q` that opens the block included. For PowerShell, drop every `&&`.
 
 - `-A` with explicit paths stages modifications, additions, and deletions under those paths and nothing else. List the paths explicitly, even for the last commit, so whatever is left out stays visible rather than being swept up by a bare `git add -A`. A directory may stand for its contents when every change under it belongs to that commit.
 - Where something is already staged, open with `git reset -q`, which unstages everything and keeps every edit, and say why it is there. Otherwise the first `git commit` silently takes the staged files along with its own.
 - Close with `git status --short`, so the user can see that what remains is exactly the left-out list.
-- Put every path in double quotes, and keep `"`, `$`, backticks, and `!` out of the subjects. Both shells expand these inside double quotes, so keeping them out means the subjects need no shell-specific escaping.
+- Chain for a Unix shell, as above. A shell runs the next line even when the one before it failed, and a `git commit` that fails -- a rejecting hook, signing, a missing identity -- leaves its files staged, so the next commit sweeps them in, just as with files already staged before the run. Chained, the first failure stops the run with the tree still staged for the commit that failed. The chain also survives a paste that joins the lines, since `&&` separates commands with or without whitespace around it, and each of these shells accepts blank lines after a trailing `&&`, so the blank lines between commits stay. Do not use `set -e` instead: pasted into an interactive shell, it closes the user's terminal on the first error. Windows PowerShell 5.1 has no `&&`, which is why its commands stay unchained.
+- Put every path in double quotes, and keep `"`, `$`, backticks, `!`, and `\` out of the subjects. Each of these shells treats some of them as special inside double quotes -- fish, for one, reads `\` as an escape -- so keeping them all out means the subjects need no shell-specific escaping.
 
 ## Delivery
 
@@ -65,6 +68,8 @@ In the conversation, in this order:
 2. **The commits.** For each one: its subject, its files, and one line on what holds them together. Name any file that carries a second concern.
 3. **Left out.** Each file not placed in any commit, with its reason. `None` is a complete answer.
 4. **The commands.** Every command, in one fenced block tagged for the shell the user chose (`bash` or `powershell`), commits in order and separated by a blank line, so the whole block can be pasted at once.
+
+For a Unix shell, the first line after the commands says that if the run stops at an error, the user fixes the cause and pastes again from that commit's `git add`.
 
 Where a grouping rests on an assumption only the user can confirm -- whether a file is meant to be committed, which of two concerns a mixed file belongs to -- state the assumption in one line after the commands. Still give the commands; a plan with one line to adjust is more useful than a question.
 
