@@ -25,6 +25,8 @@ In this order, so that every run setup makes is inside the budget and in the reg
 
 **Ledger.** Create `<workspace>/ledger.md` from `${CLAUDE_PLUGIN_ROOT}/skills/campaign/ledger-skeleton.md` (The ledger, below), with the charter path on its first line, and the dispatch answer, the start-message resolutions and the clock in its standing section.
 
+**Heartbeat.** Arm it now (Heartbeat, under The loop), so that setup's own runs are watched too.
+
 **Baseline.** The campaign's changes are what consolidation later rules on, change by change, so they must be the only difference between the starting commit and the checkpoint the user commits at the end. Work already uncommitted when the run starts would be indistinguishable from the campaign's own, and would reach consolidation as changes nobody made and nobody measured; the charter is exempt only because it is the campaign's own record. Record HEAD at this point as the starting commit: every later diff, the identity check and the checkpoint are measured from it.
 
 **Starting code.** Keep, in the workspace, a copy of what the starting commit runs as: its build, or where the project builds nothing, the code itself, exported with `git archive <starting commit>`. Once the first experiment lands, the starting code no longer exists in the working tree, and the red run and every identity check need it. No state-mutating git is needed to get it.
@@ -89,6 +91,14 @@ Within the charter's concurrency limits, run independent lanes side by side -- o
 
 **Background tasks.** Every waiter, queue or watchdog the controller starts is registered in the ledger's standing section with what it waits for, and struck when it ends. Before starting or re-arming one, or re-dispatching on a notification, confirm from the process state that the previous one is gone and that its work did not in fact complete: a notification can be interim, and a re-armed waiter duplicates the queue it watches.
 
+**Heartbeat.** A recurring wake-up, at the period the charter's run protocol names, with whatever scheduling the harness provides -- a scheduled wake-up or a cron job. Between events the controller is idle, and only a notification wakes it; a run that hangs without exiting, or an agent that never hands back, sends none, so the time limits above are enforced only if something else wakes the controller to read them. Likewise the re-reading The ledger requires after a compaction needs a moment to happen in: a controller resuming from a summary does not know what the summary dropped. Each firing does three things, briefly:
+
+1. **Stall check.** For every run, dispatched agent and background task in the registry and the standing section, read its live output against its start time and time limit. Anything with no progress since the previous firing, or past its limit, is handled under Time limits, and the finding is logged.
+2. **Context refresh.** Re-read the ledger's standing section and its newest log entries, and after a compaction what The ledger says to re-read.
+3. **Continue** with the next pending step, and reply with the standing section's current status line.
+
+The heartbeat is a background task under the rule above; a period the scheduler cannot express in one entry, such as 45 minutes in cron, takes several entries, registered as one. It runs until the account (Closing pass), suspended while the go-ahead waits for the user and re-armed on their answer.
+
 ## Reviews
 
 Three review blocks live in `${CLAUDE_PLUGIN_ROOT}/skills/campaign/reviewer-prompt.md`. Every reviewer is a fresh subagent, read-only on what it reviews; name its model per the start answer.
@@ -112,7 +122,7 @@ The loop ends at the first of these:
 - The deadline arrives. As it approaches, queue nothing that cannot finish before it; work still running at the deadline is stopped and logged.
 - The environment fails in a way the run protocol cannot recover from. Record what failed, and which closing steps it rules out.
 
-Nothing else ends it. A result that disappoints is a result: record it and re-plan. Continue without progress summaries or check-ins; they cost the user time they asked you to save. Whatever ends the loop, go to the go-ahead.
+Nothing else ends it. A result that disappoints is a result: record it and re-plan. Continue without progress summaries or check-ins beyond the heartbeat's one status line; they cost the user time they asked you to save. Whatever ends the loop, go to the go-ahead.
 
 ## Go-ahead
 
@@ -130,7 +140,7 @@ In this order, inside the approved estimate:
 4. **The closing review.** Run `git status --porcelain` unscoped first: anything outside the manifest's files, the campaign's records (Layout, in `SKILL.md`) and the workspace is unaccounted for, and the dispatch says so. Then dispatch the closing review block, with a package built by `review-package` over the whole tree (`.`), so that a change the manifest omits is in front of the reviewer rather than hidden by the package's scope. Apply what it finds: corrections to the report and the durable records, and to the ledger by new entries. A Critical finding against code is fixed and goes through the implementation review like any other change, and the numbers the fix affects are re-run where the estimate allows; where it does not, the claims those numbers rest on are demoted, and the report's header says which results predate the fix. After a Critical finding, or any finding that changes the answer, the corrected report and records get a re-review on those findings alone, with the re-review block in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md`, the charter and the report standing in for the brief: a correction written under closing-time pressure is the text least likely to have been read twice. Record the review's outcome in the header.
 5. **Identity** of the switched-off final code against the starting commit (Experiments). It runs after the closing review so that it checks the code the user will commit, whatever the review changed.
 6. **The project's test suite**, where it has one, on the final code with every switch off, run with the command the charter names. The checkpoint the user commits must leave nothing broken for anyone who never turns a switch on. Record both results in the report's header, the suite's counts against the suite baseline. Where either fails and the estimate cannot hold the fix, the header states the failure -- for identity, the comparisons it voids; for the suite, the failing tests by name.
-7. **The account.** Report in the conversation what the run delivered: the answer at its tier, the report path, and the closing review's outcome. The wrap-up presumes this account is given first.
+7. **The account.** Delete the heartbeat and strike it in the standing section: nothing is left running for it to watch. Report in the conversation what the run delivered: the answer at its tier, the report path, and the closing review's outcome. The wrap-up presumes this account is given first.
 8. **Wrap-up.** Follow `${CLAUDE_PLUGIN_ROOT}/skills/wrap-up/SKILL.md`, written to the wrap-up path (Layout, in `SKILL.md`). The closing pass ran unattended, which is the condition under which that skill requires a written copy.
 
 If the approved estimate runs out before the pass does, the report's header says which steps did not run. That is consolidation's cue to rely less on the report's own verdicts, and it is worth more than a report that reads as finished when it is not.
@@ -172,7 +182,7 @@ Work through the ledger's resume checklist before launching anything. Then take 
 - **The clock.** The deadline recorded at setup stands unless the user moves it, and a move is a charter amendment. If the log records an unanswered go-ahead, or the deadline has passed with none logged, the go-ahead takes this bullet's place; after a logged go-ahead, state what remains of the closing budget.
 - **The stop.** Whatever stopped the previous run was resolved, if at all, in a conversation you cannot see: wait for the user to state the resolution, as sdd's Setup requires of a resume.
 
-The dispatch answer in the standing section still binds; do not ask it again. Skip what setup already did: the ledger exists and must not be recreated from the skeleton, and the starting code, the noise and reference runs, the suite baseline and the red run are already recorded.
+The dispatch answer in the standing section still binds; do not ask it again. A heartbeat registered in the standing section did not survive the previous session: confirm none is armed, re-arm it, and update its registration. Skip what setup already did: the ledger exists and must not be recreated from the skeleton, and the starting code, the noise and reference runs, the suite baseline and the red run are already recorded.
 
 Before re-entering, reconcile the log against the implementer reports, the run registry and the run outputs. Work that finished after the last log entry is logged as recovered, not redone: an interruption routinely lands between a run's completion and its entry, and a log taken at its word re-runs what is already done. A gating result recorded just before the halt is checked before anything builds on it; re-run it only if its outputs are incomplete, since outputs can settle in minutes what a repeated run spends hours on.
 
