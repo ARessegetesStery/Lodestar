@@ -65,7 +65,7 @@ Workspace: `[WORKSPACE PATH]` (scratch, git-ignored). This file is the run's rec
 | Label | Started | Code state (state file, build configuration, artifact hash, switches) | Inputs | Command | Output path | Time limit | Exit | Wall | Anomalies |
 |-------|---------|-----------------------------------------------------------------------|--------|---------|-------------|------------|------|------|-----------|
 
-(State file: `states/<label>.md` in the workspace, or "starting commit" before the first change. Reviewers' re-runs are registered here too. If runs are registered by a script, name its registry file here instead.)
+(State file: `states/<label>.md` in the workspace, or "starting commit" before the first change. Re-runs for reviews are registered here too. If runs are registered by a script, name its registry file here instead.)
 
 ## 8. Log
 

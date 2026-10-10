@@ -1,6 +1,6 @@
 # Campaign reviewer prompts
 
-Three blocks to paste when dispatching a review during a campaign: one for an experimental change, one for claims about to be promoted, one for the closing report. Each block is everything between its horizontal rules; this paragraph and the notes between blocks address you, not the reviewer. A re-review after a fix round uses the re-review block in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md`, with the experiment's brief entry standing in for the task brief, and with the Gating and Markers bullets of the implementation block below appended to its "Beyond the findings" paragraph: a fix that leaks into the off path would otherwise pass until the closing identity check.
+Three blocks to paste when dispatching a review during a campaign: one for an experimental change, one for claims about to be promoted, one for the closing report. Each block is everything between its horizontal rules; this paragraph and the notes between blocks address you, not the reviewer. A re-review after a fix round uses the re-review block in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md`, with the experiment's brief entry standing in for the task brief, and with the Gating and Markers bullets of the implementation block below appended to its "Beyond the findings" paragraph: a fix that leaks into the off path would otherwise pass until the closing identity check. The implementation block goes out with the waiting block from Dispatch cost in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/SKILL.md` appended.
 
 Fill every `[BRACKETED]` slot before dispatching, except where a block marks one as omittable. Paste the ledger slices a block asks for into files in the workspace and hand over the paths; the reviewer greps the full ledger only where a block says so.
 
@@ -10,7 +10,7 @@ Do not add "do not flag X" or "at most Minor" to any of them. Pre-judging a find
 
 ---
 
-You are reviewing one experimental change made during a research campaign. A later consolidation pass will keep or discard this change as written, and clean only its interface, so it has to be correct and it has to be written to the standard of the code around it. Report two verdicts: whether the change is correct and does what its brief says, and whether its quality is acceptable to keep. Both are required; a report missing either is incomplete.
+You are reviewing one experimental change made during a research campaign, or several that landed together; for several, each slot below lists one entry per change, and you report once per change. A later consolidation pass will keep or discard this change as written, and clean only its interface, so it has to be correct and it has to be written to the standard of the code around it. Report two verdicts: whether the change is correct and does what its brief says, and whether its quality is acceptable to keep. Both are required; a report missing either is incomplete.
 
 **Read these first.**
 
@@ -29,7 +29,7 @@ You are reviewing one experimental change made during a research campaign. A lat
 - Manifest: the manifest entry matches the diff -- its files, its switch, and what it says the change does.
 - Moves: nothing touches what the charter puts off limits; no configuration surface is added unless the charter permits it; no existing test is changed to make it pass.
 - Quality: names say what things do, the structure follows the surrounding code, comments are at the surrounding density, and there is no duplication or dead surface. Hold it to the standard of code that will ship, because it may: consolidation cleans interfaces, it does not rewrite.
-- Verification: the checks the implementer ran exercise the behaviour. Test each against a deliberate small breakage -- a wrong constant, the wrong branch taken, a step left out -- and say where none would go red.
+- Verification: re-run the change's checks, and compare with the implementer's report where there is one. They must exercise the behaviour: test each against a deliberate small breakage -- a wrong constant, the wrong branch taken, a step left out -- and say where none would go red.
 
 **Grade every finding.**
 
@@ -74,15 +74,16 @@ You are reviewing claims made by a research campaign, before they are allowed to
 - The run registry: `[REGISTRY_FILE]`. Each run's code state, inputs, command and output path.
 - The charter: `[CHARTER_PATH]`. Its bar, and the scatter margin an effect has to clear to count.
 - The run protocol: `[RUN_PROTOCOL -- the charter section, or the project document's path]`
+- The re-run: `[RERUN -- label and output path of the run the controller re-ran for these claims, or: none, and why]`
 
 **For each claim.**
 
 - Re-derive every number it states from the raw output of the runs it cites, with your own script, written to the scratch area. Do not reuse the campaign's analysis scripts: a number reproduced by the script that produced it has not been checked.
-- Re-run one run the claim rests on -- the cheapest that exercises it -- under the run protocol, and compare. Where the run protocol does not let you launch it, the dispatch hands you the output of a re-run the controller launched instead: compare that. If neither exists, say so rather than skipping it silently.
+- Compare the re-run against its original, and say whether the run chosen exercises the claim. Launch no runs yourself. Where there is no re-run, say so rather than skipping it silently.
 - Compare the runs the claim compares. They must differ only in what the claim says they differ in: check code state, switches, inputs, parameters, limits, defaults and environment. A difference nobody mentioned is the most common way a comparison ends up measuring something other than its subject.
 - Check the reading: does the effect clear the charter's scatter margin; does the wording claim more than the numbers show; is there an explanation the campaign did not exclude.
 
-**Stay read-only** on the code and on the campaign's own outputs. Your scripts and your re-run's output go in the scratch area.
+**Stay read-only** on the code and on the campaign's own outputs.
 
 **Report in this form.**
 
@@ -112,11 +113,12 @@ You are reviewing the report that closes a research campaign. A consolidation pa
 - The campaign's change: `[REVIEW_PACKAGE_FILE]`. The whole working tree's diff against the starting commit, with every new file in full.
 - Unaccounted files: `[the paths git status shows outside the manifest's files, the campaign's records and the workspace, or: none]`
 - The durable records: `[the paths of the memory entry and documentation the closing pass wrote]`
+- The re-run: `[label and output path of the run the controller re-ran from those the conclusions rest on, or: none, and why]`
 
 **What to check.**
 
 - Tiers: each claim's tier in the report matches the ledger; every conclusion is at the concluded tier, with its replication done as the charter requires; every recommendation rests on claims at reviewed or above, except a recommendation to discard, which may rest on indicative claims labelled as such.
-- Numbers: re-derive, from the raw output, the numbers the conclusions and recommendations rest on, with your own script in the scratch area, and re-run one run under the run protocol, or compare the controller's re-run where the dispatch hands you one. Where a claim already passed a numbers review, check that the numbers the report states are still the reviewed ones.
+- Numbers: re-derive, from the raw output, the numbers the conclusions and recommendations rest on, with your own script in the scratch area, and compare the re-run against its original; launch no runs yourself. Where a claim already passed a numbers review, check that the numbers the report states are still the reviewed ones.
 - Retractions: nothing in the report rests on a retracted claim, or on a demoted one for a use its new tier does not allow.
 - Manifest: every change in the diff belongs to one of the report's consolidation items, and every item's files and switch match the diff. Say for each unaccounted file whether it is campaign work the manifest omits. Every experimental block is marked. By reading, the switched-off code is the starting code, re-based on any ordered-kept change.
 - Rulings and questions: every provisional ruling is labelled provisional and names what it rests on -- reviewed claims, or for a ruling that interprets the charter, the charter's text quoted; every parked question and every directive reading awaiting ratification is listed for the owner.

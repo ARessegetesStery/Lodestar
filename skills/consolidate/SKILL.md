@@ -99,6 +99,6 @@ Never stage or commit anything. The project's rules govern committing.
 
 ## Terminal state
 
-Where the readiness decision chose a chained campaign, the session has already ended there, with its recommendation of `lodestar:campaign`. Otherwise, end with a one-line recommendation, with the reason in the same line: inline implementation, or `lodestar:sdd` against the spec. Design's criteria for the choice apply, and so do the two obligations design's Terminal state attaches to the inline route. The equivalence gate is a measurement, output-heavy and the result every other task waits on, which usually tips the choice to sdd. Say that sdd starts from a clean tree, so the spec has to be committed before it runs.
+Where the readiness decision chose a chained campaign, the session has already ended there, with its recommendation of `lodestar:campaign`. Otherwise, end with a one-line recommendation, with the reason in the same line: inline implementation, or `lodestar:sdd` against the spec. Design's criteria for the choice apply, and so do the two obligations design's Terminal state attaches to the inline route. Say that sdd starts from a clean tree, so the spec has to be committed before it runs.
 
 Then stop. Do not invoke any other skill without the user's go-ahead.

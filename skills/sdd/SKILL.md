@@ -41,7 +41,7 @@ Write the whole plan for a reader with zero conversation context: no shorthand, 
 - **Goal.** One or two sentences.
 - **Spec.** The path to the spec, if there is one.
 - **Architecture.** Two or three sentences on the approach.
-- **Verification strategy.** How the work as a whole is checked, from the spec's testing section where one exists.
+- **Verification strategy.** How the work as a whole is checked, from the spec's testing section where one exists. These are long checks (Dispatch cost), the controller's.
 - **Global constraints.** The requirements that bind every task and that no single task states: exact values, exact formats, and the stated relationships between components -- "same layout as X", "matches Y". Take them from the spec's Architecture and Context sections, copied verbatim, since this is also what the reviewers get as their attention lens and a paraphrase weakens it. Every task's requirements implicitly include this section.
 
   Environmental facts an implementer can read off the project itself -- language version, dependency policy, platform -- do not belong here. They are already in the manifest and the surrounding code, and restating them adds a second place to go stale. Where the design turned one of them into a decision, it is a design decision and travels as one.
@@ -54,7 +54,7 @@ Head each task `### Task N: <name>`, in exactly that form -- the task-brief scri
 - **Interfaces.** *Consumes*: what this task uses from earlier tasks, with exact signatures. *Produces*: what later tasks rely on -- exact names, parameter and return types. An implementer sees only its own task, so without this block two capable subagents will pick two different names for the same thing.
 - **The change**, described concretely: what to do, not a direction to head in.
 - **Context** the implementer needs: docs to read, project conventions that apply, known gotchas.
-- **Verification**: the exact commands or tests, written out, each one a check on something this task produces. A gate that turns on behaviour the task does not own cannot tell you whether the task succeeded, and neither can one that cannot go red: where the spec names a falsifying configuration for a criterion, carry it into the task so the check is shown able to fail rather than merely observed passing.
+- **Verification**: the exact commands or tests, written out, each one a check on something this task produces, and short enough for the implementer to run and the reviewer to re-run (Dispatch cost). A gate that turns on behaviour the task does not own cannot tell you whether the task succeeded, and neither can one that cannot go red: where the spec names a falsifying configuration for a criterion, carry it into the task so the check is shown able to fail rather than merely observed passing. A check that runs longer is marked **long**, and the controller runs it once the task passes review. Keep those rare; runs of the whole belong in the Verification strategy.
 - **Non-goals** wherever scope could bleed into a neighbouring task.
 
 Sizing note: describe the change, do not transcribe it. Literal implementation code in the plan writes the work twice and pins implementers to the cheapest tier -- see Model selection.
@@ -81,7 +81,7 @@ Then proceed to execution.
 
 Before the first dispatch of a run, ask the user which applies: the tiering policy below; one model they name for every dispatch; or models they name per role -- implementer, reviewer, final reviewer. Skip the question only where the invocation already answers it, or, on a resume, the ledger records it. Models change faster than this skill does, and the user may know the current ones better than a policy written against an earlier generation of them. The question costs one exchange at the one moment the user is sure to be present; a wrong tier costs every dispatch of a run they are not there to watch.
 
-Record the answer in the ledger's standing section, in the user's words, when the ledger is created. It binds every dispatch of the run, including the final review, wherever this skill names a tier; it survives compaction; and a resumed run reads it there rather than asking again. Whichever answer is given, the rule below on naming the model still holds: an answer of "the policy" is carried out by naming each tier's model on its dispatch, not by omitting the model. Where the answer fixes a role's model -- one model named for every dispatch, or one named for that role -- every escalation this skill makes by tier still happens, on that same model: the fix loop's rounds 4 and 5 dispatch a fresh implementer, and a BLOCKED reasoning problem is re-dispatched to a fresh agent.
+Record the answer in the ledger's standing section, in the user's words, when the ledger is created. It binds every dispatch of the run, including the final review, wherever this skill names a tier; it survives compaction; and a resumed run reads it there rather than asking again. Whichever answer is given, the rule below on naming the model still holds: an answer of "the policy" is carried out by naming each tier's model on its dispatch, not by omitting the model. Where the answer fixes a role's model -- one model named for every dispatch, or one named for that role -- an escalation this skill makes by tier stays on that model, and a BLOCKED reasoning problem is re-dispatched to a fresh agent on it.
 
 `lodestar:campaign`, `lodestar:consolidate`, and the inline route out of `lodestar:design` ask this same question at the start of their runs, and point here for it. Each one maps its own dispatches onto the three roles, so a per-role answer covers them.
 
@@ -98,6 +98,22 @@ Use the least powerful model that can carry each role. Cost and speed both follo
 
 **Turn count beats token price.** Wall-clock and context cost both scale with a subagent's turns, and the cheapest models routinely take two to three times as many on multi-step work -- costing more in total than the tier that would have done it in one pass. Treat a mid tier as the floor for reviewers and for any implementer working from a prose description. Reserve the cheapest tier for work with no derivation left in it, which the plan format makes uncommon by design: a task can read as thoroughly specified and still require the implementer to work out the code. The standard tier is the normal choice for implementation, not the exception.
 
+## Dispatch cost
+
+Every dispatch pays a fixed cost before it does any work -- its prompts, and the files it reads to get its bearings -- and a subagent left waiting past its prompt cache pays it again. The rules below keep both small against the work they buy, in every Lodestar skill.
+
+**Dispatch fresh; resume a subagent only straight after it returns.** A resumed subagent reprocesses its entire transcript -- every file it read and every output it printed -- before its first new turn. That is cheap only while the transcript is still in the provider's prompt cache, which keeps a subagent's for about five minutes from the start of its last request, and the main session's far longer. Past that point the resume pays full price, where a fresh subagent reads only what the next piece of work needs, from the current files. So resume only to continue the exchange a return has just opened -- answering a NEEDS_CONTEXT, or a question the subagent asked -- and only before anything else is dispatched or run. Everything else, fix rounds and follow-up questions included, goes to a fresh subagent, which takes the earlier work from the brief and the report, with the findings in its dispatch.
+
+**Give each dispatch enough work to carry that cost.** Where pieces of work are ready at the same time and lie in the files one subagent would read anyway, they go in one dispatch: every open finding in one fix, several small changes in one review. Work too small to be worth any dispatch is the controller's to do inline, where the skill lets the controller do that work at all. Batching never merges what a skill keeps apart: the gate between two tasks, the separation of implementer and reviewer, or two writers on one file.
+
+**Keep long waits with the controller.** A subagent that waits on one command past its cache pays, on its next turn, to reload everything it holds, and a turn cannot start until the command returns. So subagents run only unit tests and assertions that finish well inside the cache, under about four minutes. Anything else -- a full suite, a whole-product build, a measurement, or any check that runs longer -- is a long check: the controller runs it, since its own cache lasts far longer. Where the skill has no heartbeat watching its runs, run every long check under a time limit the command itself enforces, so that a hung run ends and reports instead of leaving the controller waiting on a notification that never comes; a run that hits the limit has failed. Every dispatch whose subagent runs checks carries the block below, pasted, so that a check that runs long anyway still wakes inside the cache:
+
+---
+
+**Waiting.** Never run a whole suite, a whole-product build, a measurement, or any check your brief or dispatch marks long; those are the controller's. Your context stays cached for about five minutes from the start of each of your turns, and a turn after a longer gap pays to reload all of it. So never wait on one command for more than four minutes: run anything that may take longer in the background, with its output going to a log, and wait on it with a bounded wait -- one that returns when the command ends or after four minutes, whichever comes first -- reading the log's tail between waits. Your system prompt tells you to wait for a background task's notification rather than check on it; for this work that instruction is OVERRIDDEN.
+
+---
+
 ## Setup
 
 **Workspace.** Each plan owns a directory holding every artifact for that plan: the ledger, the operating rules, task briefs, reports, and review packages. Use the repo's designated scratch area -- `Temp/lodestar/<plan-basename>/` unless the project's CLAUDE.md designates elsewhere. Never a single shared path that every run appends to; that file only grows and stops being readable. If a directory already exists for this same plan from an earlier run, move it to `<scratch>/lodestar/archive/<plan-basename>/` -- inside the same scratch area, never outside it -- and start clean rather than appending.
@@ -106,7 +122,7 @@ Confirm the directory is git-ignored before writing into it -- `git check-ignore
 
 **Ledger.** `<workspace>/progress.md`, with its identity on the first line: `# SDD ledger -- plan: <plan file path>`.
 
-Look for one at that path before creating it. If its first line names this plan, the run is being resumed: every task carrying a `complete` line is done, so do not re-dispatch it, and pick up at the first task without one. A task whose last entry is a fix round is mid-loop; resume at the next round. A ledger naming a different plan belongs to another run -- leave it alone and start your own.
+Look for one at that path before creating it. If its first line names this plan, the run is being resumed: every task carrying a `complete` line is done, so do not re-dispatch it, and pick up at the first task without one. A task whose last entry is a fix round is mid-loop; resume at the next round. One whose last entry is a long check resumes from it: one still running is run again, a failure enters the fix loop, and a pass completes the task. A ledger naming a different plan belongs to another run -- leave it alone and start your own.
 
 Two things about resuming that the ledger cannot supply. If the previous run stopped, the user resolved whatever stopped it in a conversation you cannot see, so wait for them to state that resolution rather than inferring one from the ledger's account of the problem. And where the run stopped at or just after a task whose verification gates the work that follows, re-run that verification before continuing: a gate recorded as passed by a run that then halted is the one result least safe to take on trust.
 
@@ -122,7 +138,7 @@ On a **resumed run**, the tree is expected to carry the completed tasks' output 
 
 A clean tree is not a working one. Run the plan's verification strategy once before Task 1 and record the result in the ledger. A failure that was already there makes every later failure ambiguous, and the first task to touch that area burns fix rounds on someone else's bug. Report a red baseline and let the user decide whether to proceed past it.
 
-**Operating rules.** Before the first dispatch, assemble `<workspace>/operating-rules.md`: the agent contract from `${CLAUDE_PLUGIN_ROOT}/shared/agent-contract.md` -- the block between its horizontal rules only, not the file's opening paragraph, which addresses you -- followed by this project's own rules, its testing and environment conventions, and the report contract below. The contract is the portable part; the project supplies the rest. Every implementer dispatch carries this file's contents, pasted, and never merely referenced. Reviewers get their constraints from the review blocks and the plan's Global Constraints instead; the report contract in this file is written for an implementer and does not apply to them.
+**Operating rules.** Before the first dispatch, assemble `<workspace>/operating-rules.md`: the agent contract from `${CLAUDE_PLUGIN_ROOT}/shared/agent-contract.md` -- the block between its horizontal rules only, not the file's opening paragraph, which addresses you -- followed by this project's own rules, its testing and environment conventions, the report contract below, and the waiting block under Dispatch cost. The contract is the portable part; the project supplies the rest. Every implementer dispatch carries this file's contents, pasted, and never merely referenced. Reviewers get their constraints from the review blocks and the plan's Global Constraints instead; the report contract in this file is written for an implementer and does not apply to them.
 
 Keep it live. When a task or a review surfaces a fact that binds more than the task it was found in -- a convention, an ordering requirement, a property of the build, how the test harness signals failure -- append it here rather than only carrying it into the next dispatch. Threaded by hand it reaches one implementer; recorded here it reaches every later one without being asked for.
 
@@ -139,7 +155,7 @@ Then read the primary files the plan touches, once, and record in the operating 
 - A dispatch describes one task, not the session's history. Do not paste accumulated prior-task summaries into later dispatches.
 - If an earlier task parked a finding in the area this task touches, carry a pointer to that ledger entry.
 - Parallel dispatch is fine where the tasks' declared file sets are disjoint, and two implementers must never hold the same file. Disjoint is necessary, not sufficient: two tasks whose difficulty shares one root cause get solved two different ways by implementers who cannot see each other, and the divergence surfaces only at the final review. A declared list is a claim, not a guarantee, and tasks working the same area routinely reach further than they say. Dispatch serially where you suspect a shared root cause, where the sets merely look disjoint, or where either boundary is soft: a serial run costs a delay, a wrong call puts two implementers in one file with no way to separate the results.
-- Record the implementer's identity and the model you dispatched it on; fix rounds 1 to 3 resume the one, and rounds 4 and 5 escalate a tier above the other.
+- Record the model you dispatched the implementer on; the fix loop escalates from it.
 
 ### Report contract
 
@@ -155,7 +171,7 @@ This block goes into the operating rules, pasted, with the report path filled in
 
 **A failing check is never yours to resolve.** Do not delete it, loosen its tolerance, or redesign its fixture to make it pass. Investigate only far enough to say what the red means, then report it under your concerns and leave it failing: the effort spent explaining a failure away reliably exceeds the cost of escalating it, and a real defect talked away is the most expensive outcome this workflow has. Say which of the three it is -- a defect in the code this task owns, a defect in your own test, or a defect in code this task does NOT own. Name the third explicitly: nobody downstream can identify it from your diff, because it is not in it.
 
-If a reviewer later sends you findings, APPEND your fix report to that same file -- never start a new one -- including the covering tests, the command run, and the output.
+If your dispatch carries review findings, APPEND your fix report to the report file it names, after what is already there; never overwrite it or start a new one. Include the covering tests, the command run, and the output.
 
 Then reply with ONLY the following, under fifteen lines, because the detail lives in the report file:
 
@@ -175,7 +191,7 @@ Reports live at `<workspace>/task-N-report.md`. The four statuses route differen
 
 - **DONE** -- build the review package and dispatch the reviewer.
 - **DONE_WITH_CONCERNS** -- read the concerns first. Correctness or scope concerns are addressed before review; observations are noted and review proceeds.
-- **NEEDS_CONTEXT** -- supply what was missing and re-dispatch.
+- **NEEDS_CONTEXT** -- supply what was missing and re-dispatch (Dispatch cost).
 - **BLOCKED** -- assess. A context problem gets more context and the same model; a reasoning problem gets a more capable model; an oversized task gets broken up; a wrong plan escalates to the user. Never force the same model to retry unchanged.
 
 ### Review packages
@@ -213,14 +229,14 @@ Three routes leave before the loop starts. **Minor findings never enter it**: re
 
 Everything else enters, the requirements verdict included. A reviewer returning `Requirements: NOT MET` has raised a Critical finding whether or not it also graded one in its Findings list, so each unmet requirement enters the loop at that severity.
 
-A round is one fix dispatch plus one re-review, five rounds maximum per task.
+A round is one fix dispatch plus one re-review -- and, where it began with a failed long check, that check run again -- five rounds maximum per task.
 
-A fix dispatch carries the findings and one instruction: reproduce the failure before changing anything. How to investigate from there is the implementer's to work out. A dispatch that says only what is wrong invites a fix aimed at the symptom, and the rounds below let that happen five times.
+A fix dispatch carries the findings and one instruction: reproduce the failure before changing anything, and for a failed long check, reproduce it with a short check that shows the same fault, or from the output the dispatch carries where none can. How to investigate from there is the implementer's to work out. A dispatch that says only what is wrong invites a fix aimed at the symptom, and the rounds below let that happen five times.
 
-- **Rounds 1 to 3** resume the original implementer with the open findings verbatim; its context is intact. If the harness cannot message a live subagent, dispatch a fresh one carrying the brief path, the report path, and the findings -- the report file is the persistent memory either way.
-- **Rounds 4 and 5** dispatch a fresh implementer one tier up, told that a prior implementer attempted the task and that the report file holds what was tried. A loop surviving three resumes usually means the implementer cannot see its own problem.
+- **Rounds 1 to 3** dispatch a fresh implementer (Dispatch cost) on the task's model, carrying everything the original dispatch did and the open findings verbatim, and told that the report file holds the work so far and every earlier round's fix report.
+- **Rounds 4 and 5** dispatch the same way, one tier up. Three rounds at one tier that leave findings open usually mean that tier cannot see the problem.
 
-Every round, the implementer re-runs the verification covering the amended code and appends its fix report. Confirm that report names the covering tests, the command, and the output before re-reviewing. A fix dispatch is an implementer like any other, so the quiet-tree rule governs its package too: where two tasks are in fix rounds at once, wait for both before building either package.
+Every round, the implementer re-runs the checks covering the amended code and appends its fix report. Confirm that report names the covering tests, the command, and the output before re-reviewing. A fix dispatch is an implementer like any other, so the quiet-tree rule governs its package too: where two tasks are in fix rounds at once, wait for both before building either package.
 
 The re-review regenerates the package over the same paths, so it sees the whole task again rather than only the fix. It is scoped by the prompt instead: dispatch the re-review block from `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md`, carrying the open findings verbatim. New Critical or Important breakage joins the open findings; anything else it notices goes to the ledger as a deferred minor and never extends the loop.
 
@@ -231,6 +247,8 @@ Never fix findings yourself. Controller fixes skip review and cost you the conte
 **At the cap**, stop dispatching and adjudicate each open finding. Park one that is wrong or contestable, or real but load-bearing on nothing: `Task N: parked: <finding>. <why the code stands>`. A finding that is real and load-bearing -- a later task depends on it, or it exposes a plan defect -- stops the run: append `Task N: blocked: <reason>` and report to the user with the finding, the plan text it collides with, and the fix history. An unmet requirement cannot be parked, whatever else depends on it: append `Task N: blocked: requirement not met`, naming it, and report the same way. Adjudicate only at the cap -- doing it earlier to end a loop is pre-judging under another name -- and every adjudication is a ledger entry.
 
 ### Complete the task
+
+**Long checks first.** Where the task marks a check long, run it now that the review has passed, once the tree is yours alone as for a package, and under Dispatch cost's time limit. Append `Task N: long check running: <command>` before launching it and `Task N: long check pass | fail` when it ends. A failure enters the fix loop as a Critical finding, carrying the command and the failing output.
 
 Append `Task N: complete (impl: <model>, review: <model>): <one-line summary>`. Name the models actually dispatched, not the tier the plan called for; where fix rounds escalated, name the one that finished. The summary carries the files touched -- the actual set, including anything the scope check added -- and the review outcome, noting any parked findings. Nothing else records which tier produced which code, which is what a resumed run escalates from and what the final review needs to judge how far to trust a task. The final review's package is built from these lines. Never start the next task while a Critical or Important finding is neither fixed nor parked with a ruling.
 
@@ -246,13 +264,13 @@ Record why in the ledger. Add it to project memory only where the stop ends the 
 
 Build the package from the union of the files the ledger records as touched, not from the plan's declared lists. The two differ by every file a task changed without declaring, and those are the files nobody planned for -- the last set that should be dropped from the last review. Dispatch the final whole-branch review block from `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md` on the most capable model available, giving it the plan, the spec where one exists, the package, and the ledger.
 
-Then dispatch **one** fix subagent carrying the complete list: the final review's own findings, every deferred minor from the ledger, and every parked finding the review overturned or re-graded upward -- a ruling the review rejected is a finding again, and nothing else would carry it back. Not one fixer per finding; each separate fixer rebuilds context and re-runs suites. Then run one re-review of that fix, over a package scoped to the paths the wave itself touched: rebuilding over the whole branch would hand the re-reviewer every already-accepted line to re-litigate, and the re-review block's per-finding verdict supplies the discipline the narrower package gives up. Adjudicate anything residual as at the cap above. There is no second fix wave.
+Then dispatch **one** fix subagent carrying the complete list: the final review's own findings, every deferred minor from the ledger, and every parked finding the review overturned or re-graded upward -- a ruling the review rejected is a finding again, and nothing else would carry it back. Not one fixer per finding (Dispatch cost). Then run one re-review of that fix, over a package scoped to the paths the wave itself touched: rebuilding over the whole branch would hand the re-reviewer every already-accepted line to re-litigate, and the re-review block's per-finding verdict supplies the discipline the narrower package gives up. Adjudicate anything residual as at the cap above. There is no second fix wave, save for a regression Completion's run finds.
 
 The deferred minors are cleared here or they are not cleared at all. If any is left unfixed, say which and why, so the decision is the user's rather than an omission.
 
 ## Completion
 
-**Run the suite over the assembled work.** Every task verified its own slice, at the moment it was written, by the implementer that wrote it. Nothing has yet run the whole thing together, so a task that broke an earlier task's tests has passed every gate up to here. Run the plan's verification strategy over the finished branch and report the result against the baseline recorded at setup. Without this, completion rests on evidence never re-checked after the surrounding code changed. Report the counts themselves and not a verdict on them: a number that reached you in a subagent's return and went no further has not been reported, and "the suite is green" is the form in which a regression against the baseline goes unnoticed. Where the spec names a break that disables this work's central mechanism, run the suite once more against that break and report what stayed green -- a suite that does not move is the finding.
+**Run the suite over the assembled work.** Every task verified its own slice, at the moment it was written, by the implementer that wrote it. Nothing has yet run the whole thing together, so a task that broke an earlier task's tests has passed every gate up to here. Run the plan's verification strategy over the finished branch and report the result against the baseline recorded at setup. Without this, completion rests on evidence never re-checked after the surrounding code changed. A regression against the baseline enters the fix loop as a failed long check does (Complete the task). Report the counts themselves and not a verdict on them: a number that reached you in a subagent's return and went no further has not been reported, and "the suite is green" is the form in which a regression against the baseline goes unnoticed. Where the spec names a break that disables this work's central mechanism, run the suite once more against that break and report what stayed green -- a suite that does not move is the finding.
 
 **Check that the contract held.** You issued it, so you confirm it, and the final reviewer cannot: its package is built from paths inside the repository, so a file written outside one never appears in any package it sees. Read the implementers' reports, whose file lists are the evidence, and check the run against each clause of the contract:
 

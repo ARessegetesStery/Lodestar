@@ -4,7 +4,9 @@ Three blocks to paste when dispatching a review: one for a task, one for a fix r
 
 Fill every `[BRACKETED]` slot before dispatching, except where a block marks one as omittable. `[GLOBAL CONSTRAINTS]` is the plan's Global Constraints section copied verbatim -- exact values, exact formats, and the stated relationships between components. It is the reviewer's attention lens, so a paraphrase weakens it.
 
-Where the work was done inline rather than task by task, there is no plan behind it and no implementer report. Three parts of the task review block assume both, and all three come out for an inline review: the report line, the Global Constraints heading with its block, and the paragraph on not re-running the implementer's tests. Each is marked below. The block is otherwise unchanged.
+Where the work was done inline rather than task by task, there is no plan behind it and no implementer report. Three parts of the task review block assume both, and all three come out for an inline review: the report line, the Global Constraints heading with its block, and the comparison with the report in the paragraph on re-running the checks. Each is marked below. The block is otherwise unchanged.
+
+The task review and re-review blocks go out with the waiting block from Dispatch cost in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/SKILL.md` appended.
 
 Do not add "do not flag X" or "at most Minor" to any of them. Pre-judging a finding to spare yourself a fix round is the failure these reviews exist to catch; raise it, then adjudicate it.
 
@@ -45,7 +47,7 @@ The review package contains the status of the paths under review, a diffstat, a 
 
 **Where you cannot tell.** Some requirements live in code the package does not show, or span several tasks. Do not crawl the codebase at large -- but reading outside the package is warranted to check one concrete risk you can name, one focused check per risk. A change to a shared signature, an API contract, or shared mutable state is exactly such a risk, so checking its call sites is a finding waiting to be made rather than something to defer. What you still cannot settle goes under "Cannot verify from the package" with what you would need; do not guess and do not assume the worst. The controller holds the cross-task context and resolves those.
 
-**Do not re-run the implementer's tests.** Its report carries that evidence. Judge whether what it ran was the right thing and whether the output supports the claim. [Omit this paragraph for an inline review, where there is no report and the tests in the package are judged by reading them.]
+**Re-run the brief's checks.** [Omit the rest of this paragraph for an inline review, where there is no report.] Compare what they return with what the implementer's report says they returned, and judge whether what it ran was the right thing and whether its output supports its claims.
 
 **Stay read-only on the code under review.** Do not edit the files in the package. Writing scratch probes is expected and useful -- put them in the repository's designated scratch area, and never outside the repository.
 
@@ -74,19 +76,19 @@ Dispatch this after a fix round. The package is regenerated over the same paths,
 
 ---
 
-You are re-reviewing a fix. A previous review raised the findings below; the implementer has since amended the work. Your job is to verdict each finding, not to review the task again.
+You are re-reviewing a fix. A previous review raised the findings below; an implementer has since amended the work. Your job is to verdict each finding, not to review the task again.
 
 **Read these first.**
 
 - Requirements: `[BRIEF_FILE, or the plan and spec paths when the fix wave followed the final review rather than one task]`
-- The implementer's report, including its appended fix report: `[REPORT_FILE, or omit this line if the fix wave produced no per-task report]`
+- The task's report, including the fix reports appended to it: `[REPORT_FILE, or omit this line if the fix wave produced no per-task report]`
 - The current state of the change: `[REVIEW_PACKAGE_FILE]`
 
 **The open findings.**
 
 [FINDINGS LIST, VERBATIM FROM THE PREVIOUS REVIEW]
 
-**For each finding**, return ADDRESSED or NOT ADDRESSED, with the path and line where you verified it. ADDRESSED means the defect is gone, not that an attempt was made.
+**For each finding**, return ADDRESSED or NOT ADDRESSED, with the path and line where you verified it. ADDRESSED means the defect is gone, not that an attempt was made: re-run the checks covering each fix before you say so.
 
 **Beyond the findings**, report only breakage the fix itself introduced, graded Critical or Important. The package shows the entire task, so you will see code that was already reviewed and accepted -- do not re-litigate it. Anything else you notice goes in the last section as an observation; it will be recorded, and it will not reopen this task.
 
