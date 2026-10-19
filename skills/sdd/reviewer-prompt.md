@@ -6,7 +6,7 @@ Fill every `[BRACKETED]` slot before dispatching, except where a block marks one
 
 Where the work was done inline rather than task by task, there is no plan behind it and no implementer report. Three parts of the task review block assume both, and all three come out for an inline review: the report line, the Global Constraints heading with its block, and the comparison with the report in the paragraph on re-running the checks. Each is marked below. The block is otherwise unchanged.
 
-The task review and re-review blocks go out with the waiting block from Dispatch cost in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/SKILL.md` appended.
+The task review and re-review blocks go out with the waiting block from Dispatch cost in `${CLAUDE_PLUGIN_ROOT}/shared/runs.md` appended.
 
 Do not add "do not flag X" or "at most Minor" to any of them. Pre-judging a finding to spare yourself a fix round is the failure these reviews exist to catch; raise it, then adjudicate it.
 

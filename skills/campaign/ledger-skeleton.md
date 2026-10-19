@@ -10,7 +10,7 @@ Workspace: `[WORKSPACE PATH]` (scratch, git-ignored). This file is the run's rec
 
 ## 0. Resume checklist
 
-1. Re-read the campaign skill's autopilot rules, `[AUTOPILOT.MD PATH]`, and `[WORKSPACE PATH]/operating-rules.md` in full. A compaction keeps them only as a summary.
+1. Re-read the campaign skill's autopilot rules, `[AUTOPILOT.MD PATH]`, `[SHARED RUNS.MD PATH]`, and `[WORKSPACE PATH]/operating-rules.md` in full. A compaction keeps them only as a summary.
 2. Read section 1, and the charter's Amendments section.
 3. Read sections 2 to 7 for the current state.
 4. Read the newest entries of section 8. `grep -n '^### ' ledger.md` lists them.

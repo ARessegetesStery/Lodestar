@@ -18,7 +18,7 @@ Subagents inherit none of this session's context, so you construct exactly what 
 - **Plan in hand.** Skip planning. Run the execution loop against the given plan file.
 - **Plan only.** Write the plan and stop, typically to hand it to another session or agent.
 
-Spec in hand and plan in hand open with the dispatch question under Model selection, before anything is dispatched, unless this plan's ledger already records an answer. Plan only dispatches a single reviewer, and uses the tiering below unless the user says otherwise.
+Every entry point first reads `${CLAUDE_PLUGIN_ROOT}/shared/runs.md` in full: it holds the machinery every long run shares, and this file relies on it throughout. Spec in hand and plan in hand open with the dispatch question (Model selection), before anything is dispatched, unless this plan's ledger already records an answer. Plan only dispatches a single reviewer, and uses the tiering policy unless the user says otherwise.
 
 ## Scale escape hatch
 
@@ -41,7 +41,7 @@ Write the whole plan for a reader with zero conversation context: no shorthand, 
 - **Goal.** One or two sentences.
 - **Spec.** The path to the spec, if there is one.
 - **Architecture.** Two or three sentences on the approach.
-- **Verification strategy.** How the work as a whole is checked, from the spec's testing section where one exists. These are long checks (Dispatch cost), the controller's.
+- **Verification strategy.** How the work as a whole is checked, from the spec's testing section where one exists. These are long checks (Dispatch cost, in `shared/runs.md`), the controller's.
 - **Global constraints.** The requirements that bind every task and that no single task states: exact values, exact formats, and the stated relationships between components -- "same layout as X", "matches Y". Take them from the spec's Architecture and Context sections, copied verbatim, since this is also what the reviewers get as their attention lens and a paraphrase weakens it. Every task's requirements implicitly include this section.
 
   Environmental facts an implementer can read off the project itself -- language version, dependency policy, platform -- do not belong here. They are already in the manifest and the surrounding code, and restating them adds a second place to go stale. Where the design turned one of them into a decision, it is a design decision and travels as one.
@@ -54,10 +54,10 @@ Head each task `### Task N: <name>`, in exactly that form -- the task-brief scri
 - **Interfaces.** *Consumes*: what this task uses from earlier tasks, with exact signatures. *Produces*: what later tasks rely on -- exact names, parameter and return types. An implementer sees only its own task, so without this block two capable subagents will pick two different names for the same thing.
 - **The change**, described concretely: what to do, not a direction to head in.
 - **Context** the implementer needs: docs to read, project conventions that apply, known gotchas.
-- **Verification**: the exact commands or tests, written out, each one a check on something this task produces, and short enough for the implementer to run and the reviewer to re-run (Dispatch cost). A gate that turns on behaviour the task does not own cannot tell you whether the task succeeded, and neither can one that cannot go red: where the spec names a falsifying configuration for a criterion, carry it into the task so the check is shown able to fail rather than merely observed passing. A check that runs longer is marked **long**, and the controller runs it once the task passes review. Keep those rare; runs of the whole belong in the Verification strategy.
+- **Verification**: the exact commands or tests, written out, each one a check on something this task produces, and short enough for the implementer to run and the reviewer to re-run (Dispatch cost, in `shared/runs.md`). A gate that turns on behaviour the task does not own cannot tell you whether the task succeeded, and neither can one that cannot go red: where the spec names a falsifying configuration for a criterion, carry it into the task so the check is shown able to fail rather than merely observed passing. A check that runs longer is marked **long**, and the controller runs it once the task passes review. Keep those rare; runs of the whole belong in the Verification strategy.
 - **Non-goals** wherever scope could bleed into a neighbouring task.
 
-Sizing note: describe the change, do not transcribe it. Literal implementation code in the plan writes the work twice and pins implementers to the cheapest tier -- see Model selection.
+Sizing note: describe the change, do not transcribe it. Literal implementation code in the plan writes the work twice and pins implementers to the cheapest tier (Model selection, in `shared/runs.md`).
 
 ### No placeholders
 
@@ -75,72 +75,29 @@ Fix what you find inline. Then dispatch one reviewer to read the plan cold, with
 
 Then proceed to execution.
 
-## Model selection
-
-### The dispatch question
-
-Before the first dispatch of a run, ask the user which applies: the tiering policy below; one model they name for every dispatch; or models they name per role -- implementer, reviewer, final reviewer. Skip the question only where the invocation already answers it, or, on a resume, the ledger records it. Models change faster than this skill does, and the user may know the current ones better than a policy written against an earlier generation of them. The question costs one exchange at the one moment the user is sure to be present; a wrong tier costs every dispatch of a run they are not there to watch.
-
-Record the answer in the ledger's standing section, in the user's words, when the ledger is created. It binds every dispatch of the run, including the final review, wherever this skill names a tier; it survives compaction; and a resumed run reads it there rather than asking again. Whichever answer is given, the rule below on naming the model still holds: an answer of "the policy" is carried out by naming each tier's model on its dispatch, not by omitting the model. Where the answer fixes a role's model -- one model named for every dispatch, or one named for that role -- an escalation this skill makes by tier stays on that model, and a BLOCKED reasoning problem is re-dispatched to a fresh agent on it.
-
-`lodestar:campaign`, `lodestar:consolidate`, and the inline route out of `lodestar:design` ask this same question at the start of their runs, and point here for it. Each one maps its own dispatches onto the three roles, so a per-role answer covers them.
-
-### The tiering policy
-
-Use the least powerful model that can carry each role. Cost and speed both follow from this, and the ceiling is rarely the bottleneck.
-
-- **Mechanical implementation** -- a single file, a change with no derivation left in it: a fast, cheap model. This tier is narrower than it looks; see Turn count below.
-- **Integration and judgment** -- multi-file coordination, matching an existing pattern, debugging: a standard model.
-- **Architecture and design judgment**, and the final whole-branch review: the most capable model available.
-- **Reviews** scale to the diff: size, complexity, and risk. A small mechanical diff does not need the top tier; a subtle concurrency change does.
-
-**Name the model explicitly on every dispatch.** An omitted model inherits this session's, which is usually the most capable and most expensive one available, and that silently undoes everything above.
-
-**Turn count beats token price.** Wall-clock and context cost both scale with a subagent's turns, and the cheapest models routinely take two to three times as many on multi-step work -- costing more in total than the tier that would have done it in one pass. Treat a mid tier as the floor for reviewers and for any implementer working from a prose description. Reserve the cheapest tier for work with no derivation left in it, which the plan format makes uncommon by design: a task can read as thoroughly specified and still require the implementer to work out the code. The standard tier is the normal choice for implementation, not the exception.
-
-## Dispatch cost
-
-Every dispatch pays a fixed cost before it does any work -- its prompts, and the files it reads to get its bearings -- and a subagent left waiting past its prompt cache pays it again. The rules below keep both small against the work they buy, in every Lodestar skill.
-
-**Dispatch fresh; resume a subagent only straight after it returns.** A resumed subagent reprocesses its entire transcript -- every file it read and every output it printed -- before its first new turn. That is cheap only while the transcript is still in the provider's prompt cache, which keeps a subagent's for about five minutes from the start of its last request, and the main session's far longer. Past that point the resume pays full price, where a fresh subagent reads only what the next piece of work needs, from the current files. So resume only to continue the exchange a return has just opened -- answering a NEEDS_CONTEXT, or a question the subagent asked -- and only before anything else is dispatched or run. Everything else, fix rounds and follow-up questions included, goes to a fresh subagent, which takes the earlier work from the brief and the report, with the findings in its dispatch.
-
-**Give each dispatch enough work to carry that cost.** Where pieces of work are ready at the same time and lie in the files one subagent would read anyway, they go in one dispatch: every open finding in one fix, several small changes in one review. Work too small to be worth any dispatch is the controller's to do inline, where the skill lets the controller do that work at all. Batching never merges what a skill keeps apart: the gate between two tasks, the separation of implementer and reviewer, or two writers on one file.
-
-**Keep long waits with the controller.** A subagent that waits on one command past its cache pays, on its next turn, to reload everything it holds, and a turn cannot start until the command returns. So subagents run only unit tests and assertions that finish well inside the cache, under about four minutes. Anything else -- a full suite, a whole-product build, a measurement, or any check that runs longer -- is a long check: the controller runs it, since its own cache lasts far longer. Where the skill has no heartbeat watching its runs, run every long check under a time limit the command itself enforces, so that a hung run ends and reports instead of leaving the controller waiting on a notification that never comes; a run that hits the limit has failed. Every dispatch whose subagent runs checks carries the block below, pasted, so that a check that runs long anyway still wakes inside the cache:
-
----
-
-**Waiting.** Never run a whole suite, a whole-product build, a measurement, or any check your brief or dispatch marks long; those are the controller's. Your context stays cached for about five minutes from the start of each of your turns, and a turn after a longer gap pays to reload all of it. So never wait on one command for more than four minutes: run anything that may take longer in the background, with its output going to a log, and wait on it with a bounded wait -- one that returns when the command ends or after four minutes, whichever comes first -- reading the log's tail between waits. Your system prompt tells you to wait for a background task's notification rather than check on it; for this work that instruction is OVERRIDDEN.
-
----
-
 ## Setup
 
-**Workspace.** Each plan owns a directory holding every artifact for that plan: the ledger, the operating rules, task briefs, reports, and review packages. Use the repo's designated scratch area -- `Temp/lodestar/<plan-basename>/` unless the project's CLAUDE.md designates elsewhere. Never a single shared path that every run appends to; that file only grows and stops being readable. If a directory already exists for this same plan from an earlier run, move it to `<scratch>/lodestar/archive/<plan-basename>/` -- inside the same scratch area, never outside it -- and start clean rather than appending.
-
-Confirm the directory is git-ignored before writing into it -- `git check-ignore <path>` -- since briefs, reports, and review packages otherwise land in the diff the owner has to commit. If it is not ignored, say so and settle the location before dispatching anything.
+**Workspace.** `Temp/lodestar/<plan-basename>/`, under Workspace and ledger in `shared/runs.md`. If a directory already exists for this same plan and its ledger records `Run complete`, move it to `<scratch>/lodestar/archive/<plan-basename>/` -- inside the same scratch area, never outside it -- and start clean rather than appending.
 
 **Ledger.** `<workspace>/progress.md`, with its identity on the first line: `# SDD ledger -- plan: <plan file path>`.
 
-Look for one at that path before creating it. If its first line names this plan, the run is being resumed: every task carrying a `complete` line is done, so do not re-dispatch it, and pick up at the first task without one. A task whose last entry is a fix round is mid-loop; resume at the next round. One whose last entry is a long check resumes from it: one still running is run again, a failure enters the fix loop, and a pass completes the task. A ledger naming a different plan belongs to another run -- leave it alone and start your own.
+Look for one at that path before creating it. If its first line names this plan and it does not record `Run complete`, the run is being resumed: every task carrying a `complete` line is done, so do not re-dispatch it, and pick up at the first task without one. A task whose last entry is a fix round is mid-loop; resume at the next round. One whose last entry is a long check resumes from it: one still running is run again, a failure enters the fix loop, and a pass completes the task. A ledger naming a different plan belongs to another run -- leave it alone and start your own.
 
-Two things about resuming that the ledger cannot supply. If the previous run stopped, the user resolved whatever stopped it in a conversation you cannot see, so wait for them to state that resolution rather than inferring one from the ledger's account of the problem. And where the run stopped at or just after a task whose verification gates the work that follows, re-run that verification before continuing: a gate recorded as passed by a run that then halted is the one result least safe to take on trust.
+Its standing section (Workspace and ledger, in `shared/runs.md`) also carries the plan and spec paths, which of the two governs where they conflict, and the execution mode.
 
-Conversation memory does not survive compaction, and a controller that has lost its place re-dispatches work already done. The ledger is the recovery map: trust it over your own recollection. It opens with a standing section carrying the plan and spec paths, which governs on a plan-versus-spec conflict, the execution mode, the answer to the dispatch question, and any hard rules for the run. Append to that section whenever the user issues a directive mid-run -- dated, in their words -- because those bind every later task and nothing else records them.
+A resume follows Resuming in `shared/runs.md`. Its last gate, where the run stopped at or just after a task whose verification gates the work that follows, is that verification: re-run it before continuing.
 
-Below that section, before the first dispatch, write the **task list**: one line per task in the plan, `Task N: <name> -- <one-line summary of what it delivers>`. Progress lines append underneath it. Without it the ledger records only what is finished: a controller can see where the run stopped but not how much remains, and would have to re-read the plan to find out.
+Below the standing section, before the first dispatch, write the **task list**: one line per task in the plan, `Task N: <name> -- <one-line summary of what it delivers>`. Progress lines append underneath it. Without it the ledger records only what is finished: a controller can see where the run stopped but not how much remains, and would have to re-read the plan to find out.
 
 **Establish the baseline.** Nothing is committed during a run, so the working tree is the only record of what has been done, and every task's scope check compares against it. What counts as a clean start depends on which kind of run this is, so it comes after the ledger lookup.
 
 On a **fresh run**, `git status --porcelain` should come back empty. If it does not, stop and tell the user what is outstanding rather than starting. Work that was already uncommitted is indistinguishable from work a task produced, and it will read as scope bleed on every task that follows.
 
-On a **resumed run**, the tree is expected to carry the completed tasks' output -- that is the point of resuming. The baseline is the set of files the ledger records against completed tasks. Anything `git status` shows beyond that set is unaccounted for: report it and let the user say whether it belongs before going on.
+On a **resumed run**, the baseline is the set of files the ledger records against completed tasks (Resuming).
 
 A clean tree is not a working one. Run the plan's verification strategy once before Task 1 and record the result in the ledger. A failure that was already there makes every later failure ambiguous, and the first task to touch that area burns fix rounds on someone else's bug. Report a red baseline and let the user decide whether to proceed past it.
 
-**Operating rules.** Before the first dispatch, assemble `<workspace>/operating-rules.md`: the agent contract from `${CLAUDE_PLUGIN_ROOT}/shared/agent-contract.md` -- the block between its horizontal rules only, not the file's opening paragraph, which addresses you -- followed by this project's own rules, its testing and environment conventions, the report contract below, and the waiting block under Dispatch cost. The contract is the portable part; the project supplies the rest. Every implementer dispatch carries this file's contents, pasted, and never merely referenced. Reviewers get their constraints from the review blocks and the plan's Global Constraints instead; the report contract in this file is written for an implementer and does not apply to them.
-
-Keep it live. When a task or a review surfaces a fact that binds more than the task it was found in -- a convention, an ordering requirement, a property of the build, how the test harness signals failure -- append it here rather than only carrying it into the next dispatch. Threaded by hand it reaches one implementer; recorded here it reaches every later one without being asked for.
+**Operating rules.** Before the first dispatch, assemble `<workspace>/operating-rules.md` under Operating rules in `shared/runs.md`, and keep it live.
 
 **Pre-flight scan.** Before dispatching Task 1, read the plan once for tasks that contradict each other or the global constraints, and for anything the plan mandates that a reviewer would treat as a defect. Present everything found as one batched question, each finding beside the plan text that mandates it, asking which governs. If the scan is clean, proceed without comment.
 
@@ -157,42 +114,9 @@ Then read the primary files the plan touches, once, and record in the operating 
 - Parallel dispatch is fine where the tasks' declared file sets are disjoint, and two implementers must never hold the same file. Disjoint is necessary, not sufficient: two tasks whose difficulty shares one root cause get solved two different ways by implementers who cannot see each other, and the divergence surfaces only at the final review. A declared list is a claim, not a guarantee, and tasks working the same area routinely reach further than they say. Dispatch serially where you suspect a shared root cause, where the sets merely look disjoint, or where either boundary is soft: a serial run costs a delay, a wrong call puts two implementers in one file with no way to separate the results.
 - Record the model you dispatched the implementer on; the fix loop escalates from it.
 
-### Report contract
+### Reports
 
-This block goes into the operating rules, pasted, with the report path filled in per dispatch:
-
----
-
-**Reporting.** Write your full report to the report file named in your dispatch: what you implemented, what you verified with the exact command and its output, the files you created and modified, your self-review findings, and any concerns.
-
-**Where the behaviour under test already exists** -- a port, a refactor, an invariant nobody had asserted -- run its test before you change anything and record the result; an unexpected red there is the most informative event in this workflow. Where the code does not exist yet, skip that run and say so: a missing symbol is not a demonstration that the test discriminates, and staging one costs a build cycle to learn nothing.
-
-**What certifies a test is a deliberate small breakage:** a wrong constant, the wrong branch taken, a step left out, an empty return. Report one line per breakage -- what you broke, which tests went red, which stayed green. A test no breakage can turn red has not been shown to test anything, so a breakage nothing catches is a finding about your tests rather than a footnote, and saying so is more useful than reporting a pass.
-
-**A failing check is never yours to resolve.** Do not delete it, loosen its tolerance, or redesign its fixture to make it pass. Investigate only far enough to say what the red means, then report it under your concerns and leave it failing: the effort spent explaining a failure away reliably exceeds the cost of escalating it, and a real defect talked away is the most expensive outcome this workflow has. Say which of the three it is -- a defect in the code this task owns, a defect in your own test, or a defect in code this task does NOT own. Name the third explicitly: nobody downstream can identify it from your diff, because it is not in it.
-
-If your dispatch carries review findings, APPEND your fix report to the report file it names, after what is already there; never overwrite it or start a new one. Include the covering tests, the command run, and the output.
-
-Then reply with ONLY the following, under fifteen lines, because the detail lives in the report file:
-
-- **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
-- Files created and modified
-- A one-line verification summary
-- Your concerns, if any
-- The report file path
-
-**Escalating is always available and never counts against you.** Bad work is worse than no work. Stop and escalate when the task needs an architectural decision with several defensible answers; when you need to understand code beyond what you were given and cannot find it; when you have been reading file after file without making progress; or when finishing would mean restructuring something the task did not anticipate. If something is unclear before you start, ask then rather than guessing.
-
-Use DONE_WITH_CONCERNS if you finished the work but have doubts about its correctness. Use BLOCKED if you cannot finish. Use NEEDS_CONTEXT if you need information you were not given. For those last two, put the specifics in the reply itself -- the controller acts on them directly. Never silently produce work you are unsure about.
-
----
-
-Reports live at `<workspace>/task-N-report.md`. The four statuses route differently:
-
-- **DONE** -- build the review package and dispatch the reviewer.
-- **DONE_WITH_CONCERNS** -- read the concerns first. Correctness or scope concerns are addressed before review; observations are noted and review proceeds.
-- **NEEDS_CONTEXT** -- supply what was missing and re-dispatch (Dispatch cost).
-- **BLOCKED** -- assess. A context problem gets more context and the same model; a reasoning problem gets a more capable model; an oversized task gets broken up; a wrong plan escalates to the user. Never force the same model to retry unchanged.
+Reports live at `<workspace>/task-N-report.md`. Statuses route under Implementer statuses in `shared/runs.md`; on DONE, build the review package and dispatch the reviewer.
 
 ### Review packages
 
@@ -248,13 +172,13 @@ Never fix findings yourself. Controller fixes skip review and cost you the conte
 
 ### Complete the task
 
-**Long checks first.** Where the task marks a check long, run it now that the review has passed, once the tree is yours alone as for a package, and under Dispatch cost's time limit. Append `Task N: long check running: <command>` before launching it and `Task N: long check pass | fail` when it ends. A failure enters the fix loop as a Critical finding, carrying the command and the failing output.
+**Long checks first.** Where the task marks a check long, run it now that the review has passed, once the tree is yours alone as for a package, under Dispatch cost's time limit in the foreground, or watched by the heartbeat (Long runs) in the background. Append `Task N: long check running: <command>` before launching it and `Task N: long check pass | fail` when it ends. A failure enters the fix loop as a Critical finding, carrying the command and the failing output.
 
 Append `Task N: complete (impl: <model>, review: <model>): <one-line summary>`. Name the models actually dispatched, not the tier the plan called for; where fix rounds escalated, name the one that finished. The summary carries the files touched -- the actual set, including anything the scope check added -- and the review outcome, noting any parked findings. Nothing else records which tier produced which code, which is what a resumed run escalates from and what the final review needs to judge how far to trust a task. The final review's package is built from these lines. Never start the next task while a Critical or Important finding is neither fixed nor parked with a ruling.
 
 ## Continuous execution
 
-Run the plan to the end without checking in. Progress summaries and "shall I continue?" prompts cost the user time they asked you to save.
+Run the plan to the end without checking in. Progress summaries and "shall I continue?" prompts, beyond the heartbeat's one status line (Long runs), cost the user time they asked you to save.
 
 Once the first task is dispatched, five things stop the run, and nothing else: the user asked for a review gate; a review finding conflicts with what the plan mandates, which is theirs to resolve and not yours; an implementer reports that the plan itself is wrong; a finding survives the fix cap and is either load-bearing or an unmet requirement; or continuing would build later tasks on something known to be wrong. In each case, stop and report what happened rather than working around it.
 
@@ -288,3 +212,5 @@ Report the result in a line. Where a clause did not hold, say which, where, and 
 **End with the wrap-up report.** The ledger records what was produced; the wrap-up reports the complement -- what is still uncertain, what the user may be overlooking, and what changed without being asked -- which is what they need before reviewing a branch this process built without them. Produce it as part of finishing the run, without asking: follow `${CLAUDE_PLUGIN_ROOT}/skills/wrap-up/SKILL.md` and write it to `docs/lodestar/wrap-up/YYYY-MM-DD-topic-wrap-up.md`, on the same topic as the plan, unless the project or the user states a location.
 
 This skill runs unattended, so the user is most likely absent when it finishes -- which is the condition under which that report's Delivery section requires a written copy and not only the conversation.
+
+Then append `Run complete` to the ledger, and delete the heartbeat if one is armed. A later run of the same plan starts fresh from that line rather than resuming.

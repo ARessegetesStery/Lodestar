@@ -1,6 +1,6 @@
 ---
 name: consolidate
-description: Use after lodestar:campaign, once its state is checkpointed; has the campaign's results reviewed cold and settles with the user whether they are ready to consolidate or need a chained campaign first, then takes the keep-or-discard ruling on each change and writes the spec that turns the kept ones into production code.
+description: Use after lodestar:campaign, once its state is checkpointed; has the campaign's results reviewed cold and settles with the user whether they are ready to consolidate or need a bounded experiment or a chained campaign first, then takes the keep-or-discard ruling on each change and writes the spec that turns the kept ones into production code.
 disable-model-invocation: false
 ---
 
@@ -10,7 +10,7 @@ disable-model-invocation: false
 
 A campaign ends with its changes in the tree behind switches, a report that lists each change as a consolidation item with its evidence and a recommendation, and a set of rulings it took on the user's behalf. Consolidation turns that into production code. It has the campaign's results reviewed cold, takes the user's ruling on every item and every provisional ruling, and writes the spec that makes the kept items production code: switches removed or promoted to real options, interfaces cleaned, tests and documentation written, and the discarded items gone. It ends as `lodestar:design` does, with an approved spec and a recommendation of inline implementation or `lodestar:sdd`.
 
-It runs in two stages. The first reviews the campaign's results and settles, with the user, whether they are ready to consolidate or raise a question that a chained campaign has to answer first. Only when they are ready does the second stage rule on the items and write the spec.
+It runs in two stages. The first reviews the campaign's results and settles, with the user, whether they are ready to consolidate or raise a question to answer first: a bounded one in an experiment lane here, or one that needs a chained campaign. Only when they are ready does the second stage rule on the items and write the spec.
 
 For work that came through a campaign, consolidation takes the place of design. The report is the settled intent, and the campaign's evidence stands in for design's investigation, so what is left to settle is which items to keep and what their production form is.
 
@@ -18,17 +18,21 @@ It is not a rewrite. Campaign code was written to the standard of the code aroun
 
 ## Start
 
+Read `${CLAUDE_PLUGIN_ROOT}/shared/runs.md` in full first: this skill dispatches reviewers and may run an experiment lane, and that file holds what every such run shares.
+
+**Resuming.** Where the workspace's `notes.md` (Workspace, below) already exists, this is a resume of a session that ended (Resuming, in `shared/runs.md`): the dispatch answer, the opening review and every ruling it records stand, and nothing they settle is asked or dispatched again. While it records an open experiment lane, that lane's uncommitted code is expected in the tree; anything else outstanding is reported as on a fresh start.
+
 **Locate the campaign.** The report path is given, or found where the campaign skill's Layout puts reports (`${CLAUDE_PLUGIN_ROOT}/skills/campaign/SKILL.md`). From its header, take the charter, the ledger, and the starting commit.
 
-**Check the checkpoint.** `git status --porcelain` must be empty, and `git log --format='%h %s' <starting commit>..HEAD` must show the campaign's code committed under the `exp:` prefix that `lodestar:commit-plan` gives a campaign. The checkpoint is HEAD: the campaign's close may span several commits -- its code under `exp:`, its records under the history's own prefixes -- and everything from the starting commit to HEAD is what consolidation decides on. If the tree is dirty, or no `exp:` commit is in the range, stop and ask the user to checkpoint first, with `/lodestar:commit-plan`; where the report's manifest is empty -- the campaign changed no code -- no `exp:` commit is expected. The checkpoint is what lets every review diff against a fixed state, lets a discarded item be removed by diff, keeps the experimental code in history for anyone reproducing the campaign's numbers, and lets `lodestar:sdd` start from the clean tree it requires. Name any commit in that range that touches files outside the manifest and the campaign's records (Layout, in the campaign skill), and ask whether it belongs.
+**Check the checkpoint.** `git status --porcelain` must be empty, and `git log --format='%h %s' <starting commit>..HEAD` must show the campaign's code committed under the `exp:` prefix that `lodestar:commit-plan` gives a campaign. The checkpoint is HEAD: the campaign's close may span several commits -- its code under `exp:`, its records under the history's own prefixes -- and everything from the starting commit to HEAD is what consolidation decides on. If the tree is dirty, or no `exp:` commit is in the range, stop and ask the user to checkpoint first, with `/lodestar:commit-plan`; where the report's manifest is empty -- the campaign changed no code -- no `exp:` commit is expected. The checkpoint is what lets every review diff against a fixed state, lets a discarded item be removed by diff, keeps the experimental code in history for anyone reproducing the campaign's numbers, and lets `lodestar:sdd` start from the clean tree it requires. Name any commit in that range that touches files outside the manifest, any experiment lane's manifest in `notes.md`, and the campaign's records (Layout, in the campaign skill), and ask whether it belongs.
 
 **Follow the chain.** A report whose header names a campaign it continues is consolidated together with that one, and with whatever that one continues in turn. Give the whole chain the reading this skill gives one campaign: the range starts at the first campaign's starting commit, every report's items are presented, and where a later report covers an item an earlier one did, its recommendation supersedes. Consolidating one link alone would rule on code whose successors have since changed it. Every charter, report and ledger slot of the opening review takes each link's, in chain order; items are named `<report basename>:<item ID>`, since IDs repeat across links; and a ruling taken at an earlier link's readiness stage, which its successor's charter records, goes into the spec's Rulings section beside this session's.
 
 **Check the ledger.** It is scratch, and exists only on the machine the campaign ran on. If it is absent, say so: the opening review then works from the report and the diff alone, and reports which checks that leaves it unable to make.
 
-**Workspace.** `Temp/lodestar/<report-basename>/`, named after the report consolidation was invoked on, unless the project's instruction file (CLAUDE.md, AGENTS.md) designates another scratch area; it must be git-ignored (`git check-ignore <path>`). It holds the opening review's package and report, and `notes.md`: the dispatch answer, the readiness decision and every ruling, each verbatim and dated. They are kept there so they survive a compaction until the spec carries them into the tracked record.
+**Workspace.** `Temp/lodestar/<report-basename>/`, named after the report consolidation was invoked on (Workspace and ledger, in `shared/runs.md`). It holds the opening review's package and report, and `notes.md`, this session's ledger: the dispatch answer, the readiness decision and every ruling, each verbatim and dated, and any experiment lane's record. They are kept there so they survive a compaction until the spec carries them into the tracked record.
 
-**Ask the dispatch question** under Model selection in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/SKILL.md`, unless the invocation already answers it. This skill's roles map onto the question's: the opening review to the final-reviewer role, and the spec's cold review to the reviewer role. Record the answer in the workspace's `notes.md`.
+**Ask the dispatch question** (Model selection, in `shared/runs.md`), unless the invocation already answers it. This skill's roles map onto the question's: the opening review to the final-reviewer role; the spec's cold review and an experiment lane's reviews to the reviewer role; a lane's implementers to the implementer role. Record the answer in the workspace's `notes.md`.
 
 Raise everything this section turns up in one message.
 
@@ -40,7 +44,7 @@ This is not a repeat of the campaign's closing review, and the difference is who
 
 Build its package from the checkpoint: `git diff --stat <starting commit> HEAD` followed by `git diff -U10 <starting commit> HEAD`, written into one file in the workspace. Hand the reviewer the path; the package never enters your own context.
 
-Where the review cannot settle something without running it, it names the run that would. Offer those runs to the user beside the items they bear on, and run one only if the user asks.
+Where the review cannot settle something without running it, it names the run that would. Offer those runs to the user beside the items they bear on; one the user asks for goes through the experiment lane.
 
 ## Readiness
 
@@ -48,13 +52,29 @@ Before any item is ruled on, present the results in one message:
 
 - **The answer** as the campaign reached it and as the opening review reads it: which conclusions the record supports, at which tier, and where the reviewer's reading differs from the report's.
 - **The questions the results raise**: the report's parked questions and untested hypotheses, the questions the opening review raises, and the runs it named that reading cannot settle.
-- **The readiness verdict**, the opening review's and your own: consolidate now, or continue with a chained campaign first -- and for the latter, the question that campaign would take.
+- **The readiness verdict**, the opening review's and your own: consolidate now, settle a bounded question here first, or continue with a chained campaign first -- and for either of the latter, the question.
 
 The user decides. A campaign is ready when the items worth keeping stand on reviewed evidence and no open question could change which of them to keep. One whose result mostly raised a new question is not ready, however solid its numbers: consolidating first would rule on code the next campaign may yet change.
 
 **Consolidate:** go on to Rulings.
 
+**Experiment here:** run the experiment lane, then present readiness again.
+
 **Chain:** stop here, and record the decision and the question in the workspace's `notes.md`. No item is ruled on now; the chain is consolidated as a whole when it ends (Follow the chain). Recommend `/lodestar:campaign` with no charter. Its charter starts from this checkpoint, names this report as the campaign it continues, and carries into its starting state, in substance, what the opening review found: the review's file is scratch, and the charter has to stand without it. A provisional ruling or parked question the user wants settled to steer the next campaign may be ruled on now, and enters that charter as a directive.
+
+## Experiment lane
+
+For a question a few runs can settle, where a chained campaign's charter, queue and report would cost more than the answer: whether a kept item holds on a case the campaign never ran, which of two settings to promote, a failure the user wants fixed before the code ships. It opens at readiness, or later wherever a ruling turns on a run, and only on the user's word. They state the question, the result that settles it, and a time budget; record the three verbatim in `notes.md`.
+
+Its code and results join what this session decides on, so it runs under three of the campaign's rules (`${CLAUDE_PLUGIN_ROOT}/skills/campaign/autopilot.md`), each in full:
+
+- **Code** is written as an experiment's is (Experiments): to the surrounding standard, behind a switch off by default, marked, and entered in a manifest kept in `notes.md`, with IDs of the form `lane:<n>`. Its snapshots and code states (Code records) go in this session's workspace, and the identity check runs after the first change lands, against an export of the checkpoint (`git archive`) kept in the workspace, with its noise residual measured first by two runs of that export, as the autopilot's Setup does. Implementers receive operating rules assembled as the autopilot's Setup assembles them, and each change gets the implementation review before any result it produces is used.
+- **Runs** follow the charter's run protocol: each briefed with its prediction before it runs, registered in `notes.md`, and watched by the heartbeat (Long runs, in `shared/runs.md`).
+- **Evidence.** A result a ruling or the kept set will rest on gets the numbers review first, and is presented at its claim tier (`${CLAUDE_PLUGIN_ROOT}/skills/campaign/SKILL.md`).
+
+It stays bounded: it answers the question it was opened with, and nothing else. When the result raises a new question, or the budget runs out with the question open, stop and report; whether to open another lane, chain a campaign, or rule without the answer is the user's. A lane that keeps reopening is a campaign without a charter, and its record would be scattered across a consolidation's notes.
+
+When it closes, report the result at its tier, and have the user checkpoint the lane's code with `/lodestar:commit-plan`, naming the lane and `<workspace>/notes.md` as its manifest, so that its code goes under `exp:` as a campaign's does. The checkpoint moves to the new HEAD, and every later diff and the equivalence gate use it. The lane's items are ruled on beside the campaign's.
 
 ## Rulings
 
@@ -72,7 +92,7 @@ Record every ruling verbatim and dated in the workspace's `notes.md` (Start); th
 
 ## The production design
 
-Work out the production form of the kept set, and present it in the conversation before writing anything, as `lodestar:design` does: wait for approval, and revise if the user asks.
+Work out the production form of the kept set, and present it in the conversation before writing anything, as `lodestar:design` does (Presentation, led by its attention list): wait for approval, and revise if the user asks.
 
 - **Each kept item.** Where it lives, and what becomes of its switch: removed, with the behaviour always on; or promoted to a real option, with its name, its default and its validation. Its interface, cleaned to the codebase's conventions. What it merges with.
 - **Each discarded or deferred item.** Its removal: every block, marker and file, found through the campaign's markers and the manifest. A discarded item leaves nothing behind. A deferred one leaves nothing behind either; the spec's Non-goals names the checkpoint commit it can be recovered from.
@@ -84,16 +104,17 @@ The rest of design's discipline applies unchanged: cut what the goal does not ne
 
 ## The spec
 
-Write it to `docs/lodestar/spec/YYYY-MM-DD-topic-consolidation-spec.md`, unless the project or the user states another location, following the Spec structure, Keeping it tight, and Self-review sections of `${CLAUDE_PLUGIN_ROOT}/skills/design/SKILL.md`, including the one cold review dispatch its self-review ends with. Two additions to that structure:
+Write it to `docs/lodestar/spec/YYYY-MM-DD-topic-consolidation-spec.md`, unless the project or the user states another location, following the Spec structure, Keeping it tight, and Self-review sections of `${CLAUDE_PLUGIN_ROOT}/skills/design/SKILL.md`, including the one cold review dispatch its self-review ends with. Three additions to that structure:
 
-- The Context section also names the report and the charter by path, the starting commit, and the checkpoint commit.
+- The Context section also names the report and the charter by path, the starting commit, and the checkpoint commit; and, for each experiment lane, its question, the result that settles it, and its result at its tier, with the code states and numbers of the runs behind it -- `notes.md` is scratch, and the spec is the lane's only tracked record.
 - A ninth section, **Rulings**, after Non-goals, carries every ruling taken in this session, verbatim and dated, one entry per item and per provisional ruling. It is an enumerating section, so the word cap applies per entry: rulings are the one part of the spec that exists nowhere else, and a cap on the whole would force them into paraphrase. The Non-goals section lists the deferred items, each with the ruling that deferred it.
+- The spec's last requirement, carried out once the equivalence gate passes: list the scratch the consolidation has made redundant -- each campaign workspace in the chain, and this session's -- each entry with its size and what deleting it loses, such as raw output the report's Reproduction cites as scratch. List only; never delete. Long campaigns fill the disk with scratch, and only the user knows which of it they still need.
 
 The report stays as the campaign left it: it records what the campaign found, and the spec records what was decided about it. Where the two disagree, the spec governs, and says why at the point where they differ.
 
 Say, as design does, whether the work owes a standalone document. It usually owes the project's own documentation of the behaviour that now ships.
 
-Then ask the user to review the file.
+Then ask the user to review the file, as design's Self-review does.
 
 Never stage or commit anything. The project's rules govern committing.
 

@@ -19,7 +19,7 @@ If the question turns out to be answerable in theory, say so and recommend `lode
 ## Entry points
 
 - **No charter.** Run the charter phase. It ends when the charter is written and cold-read, and the user has been asked about compacting.
-- **A charter path.** Read `${CLAUDE_PLUGIN_ROOT}/skills/campaign/autopilot.md` in full, then run the autopilot phase from the charter. If the charter's ledger already exists, this is a resume: see Resuming in that file.
+- **A charter path.** Read `${CLAUDE_PLUGIN_ROOT}/skills/campaign/autopilot.md` and `${CLAUDE_PLUGIN_ROOT}/shared/runs.md` in full, then run the autopilot phase from the charter. If the charter's ledger already exists, this is a resume: see Resuming in `autopilot.md`.
 
 ## Charter phase
 
@@ -38,11 +38,11 @@ The charter has the sections below. Work out what the reading settles, and batch
 5. **Moves allowed.** What the autopilot may change -- files, subsystems, parameters, instruments -- and what is off limits. How experiments are gated in this project: the mechanism that keeps every experimental change off by default. Where the charter names none, the autopilot uses the lightest mechanism the project already has, such as an environment variable read once or a compile-time definition, and adds no configuration key unless this section permits one (the full gating rules are under Experiments in `autopilot.md`). Whether it may add configuration surface, touch shared components, or change existing tests; changing a test to make it pass is never among the moves.
 6. **Decision scope.** Which decisions the autopilot takes alone, and which it parks for the user (Decisions, below). Changing the bar -- beyond applying a rule the bar itself states -- extending the budget, and anything section 5 puts off limits are always the user's; say what else is.
 7. **Budget.** Wall-clock time for the experiments, as a duration from the autopilot's start. The closing pass -- concluding draws, the closing review, and the durable records -- is outside it: the loop's end presents its plan and an estimate sized from measured costs (Go-ahead, in `autopilot.md`), since a closing time guessed before any run is the usual reason a campaign ends without its concluding draws.
-8. **Run protocol.** How experiments are run in this project: concurrency limits, isolation between runs, the provenance to record per run, the environment settings that make runs comparable, the traps known to cost time, the heartbeat's period (Heartbeat, in `autopilot.md`), 45 minutes unless a stall worth catching would be shorter, and the command that runs the project's test suite where it has one -- the tier of it the setup and closing pass run, where the suite has tiers. Where the project keeps this in a document, name it and add only what this campaign needs beyond it; where it keeps none, write it out here.
+8. **Run protocol.** How experiments are run in this project: concurrency limits, isolation between runs, the provenance to record per run, the environment settings that make runs comparable, the traps known to cost time, the heartbeat's period, where the default (Long runs, in `${CLAUDE_PLUGIN_ROOT}/shared/runs.md`) would miss a stall worth catching, and the command that runs the project's test suite where it has one -- the tier of it the setup and closing pass run, where the suite has tiers. Where the project keeps this in a document, name it and add only what this campaign needs beyond it; where it keeps none, write it out here.
 9. **Deliverables.** The report path, the ledger path, and the durable records the project expects beyond them -- memory, documentation -- written once, for the campaign as a whole. Defaults, and the rule for durable records, under Layout.
 10. **Starting hypotheses.** What the discussion suspects, each with the measurement that would test it and the predicted result. These are a queue, not findings; the autopilot may reorder, drop and add to them.
 
-Present the charter in the conversation as a whole before writing it. Wait for approval; if the user asks for changes, revise and present again.
+Present the charter in the conversation as a whole before writing it, led by the attention list (Presentation, in `${CLAUDE_PLUGIN_ROOT}/skills/design/SKILL.md`). Wait for approval; if the user asks for changes, revise and present again.
 
 ### Write it to stand alone
 
@@ -57,11 +57,11 @@ Write it to the charter path (Layout). Self-review it once for placeholders, con
 
 ### Cold read
 
-Dispatch one reviewer to read the charter cold: that file, and only the paths it names. Ask it for every point at which it would have to ask the author a question before it could run this campaign unattended; every criterion that rests on no number or cannot fail; and every move or decision whose scope a reasonable reader could take two ways. This is the charter's one test of standing alone, and its author is the reader least able to perform it. It is not a gate: fix what comes back and carry on. Name the model on the dispatch; the tiering policy is under Model selection in `${CLAUDE_PLUGIN_ROOT}/skills/sdd/SKILL.md`.
+Dispatch one reviewer to read the charter cold: that file, and only the paths it names. Ask it for every point at which it would have to ask the author a question before it could run this campaign unattended; every criterion that rests on no number or cannot fail; and every move or decision whose scope a reasonable reader could take two ways. This is the charter's one test of standing alone, and its author is the reader least able to perform it. It is not a gate: fix what comes back and carry on. Name the model on the dispatch; the tiering policy is under Model selection in `${CLAUDE_PLUGIN_ROOT}/shared/runs.md`.
 
 ### Hand over
 
-Ask the user to review the file. Then tell them the charter is written to stand alone, and ask them to judge whether this conversation's context should be compacted, or a fresh session started, before the autopilot begins with `/lodestar:campaign <charter path>`. The discussion that produced the charter is now the largest thing in context, and the one thing the autopilot does not need. Tell them too that the charter may be committed before the autopilot starts or left uncommitted: the start check accepts either, and nothing else in the tree may be outstanding.
+Ask the user to review the file, leading with the attention list, updated with what the self-review and the cold read changed. Then tell them the charter is written to stand alone, and ask them to judge whether this conversation's context should be compacted, or a fresh session started, before the autopilot begins with `/lodestar:campaign <charter path>`. The discussion that produced the charter is now the largest thing in context, and the one thing the autopilot does not need. Tell them too that the charter may be committed before the autopilot starts or left uncommitted: the start check accepts either, and nothing else in the tree may be outstanding.
 
 Tell them too that the run stops at the loop's end for their go-ahead before the closing pass.
 
