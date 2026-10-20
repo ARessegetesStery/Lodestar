@@ -91,7 +91,7 @@ Within the charter's concurrency limits, run independent lanes side by side -- o
 
 **Background tasks.** Every waiter, queue or watchdog the controller starts is registered in the ledger's standing section with what it waits for, and struck when it ends. Before starting or re-arming one, or re-dispatching on a notification, confirm from the process state that the previous one is gone and that its work did not in fact complete: a notification can be interim, and a re-armed waiter duplicates the queue it watches.
 
-**Heartbeat.** As under Long runs in `shared/runs.md`, at the period the charter's run protocol names, or the default: without it, the time limits above are enforced only when something else happens to wake the controller. Its stall check covers every run, dispatched agent and background task in the registry and the standing section, and its status line is the standing section's. It is a background task under the rule above. Unlike the general rule, it stays armed between runs, from setup until the account (Closing pass), suspended only while the go-ahead waits for the user and re-armed on their answer.
+**Heartbeat.** As under Long runs in `shared/runs.md`, at the period the charter's run protocol names, or the default: without it, the time limits above are enforced only when something else happens to wake the controller. Its stall check covers every run, dispatched agent and background task in the registry and the standing section, and its status line is the standing section's. It is a background task under the rule above, and so is each of its sleeps. Unlike the general rule, it stays armed between runs, from setup until the account (Closing pass), suspended only while the go-ahead waits for the user and re-armed on their answer.
 
 ## Reviews
 
@@ -176,7 +176,7 @@ Work through the ledger's resume checklist before launching anything. Then take 
 - **The clock.** The deadline recorded at setup stands unless the user moves it, and a move is a charter amendment. If the log records an unanswered go-ahead, or the deadline has passed with none logged, the go-ahead takes this bullet's place; after a logged go-ahead, state what remains of the closing budget.
 - **The stop**, as Resuming sets it.
 
-For a heartbeat registered in the standing section, check the scheduler, re-arm it if it is gone (Long runs), and update its registration. Skip what setup already did: the ledger exists and must not be recreated from the skeleton, and the starting code, the noise and reference runs, the suite baseline and the red run are already recorded.
+A heartbeat registered in the standing section died with the previous session: re-arm it as Long runs says, and update its registration. Skip what setup already did: the ledger exists and must not be recreated from the skeleton, and the starting code, the noise and reference runs, the suite baseline and the red run are already recorded.
 
 Before re-entering, reconcile the log against the implementer reports, the run registry and the run outputs. Work that finished after the last log entry is logged as recovered, not redone: an interruption routinely lands between a run's completion and its entry, and a log taken at its word re-runs what is already done. The last gate (Resuming) is checked from its outputs, and re-run only if they are incomplete, since outputs can settle in minutes what a repeated run spends hours on.
 

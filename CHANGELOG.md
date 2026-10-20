@@ -2,6 +2,12 @@
 
 Versions follow the `[x.y.z]` tags in the commit subjects; 0.1.0 is the untagged first commit, and two commits carry `[0.1.5]`. Dates are commit dates.
 
+## 1.0.1 -- 2026-10-19
+
+- **Heartbeat on a chained timer** (`shared/runs.md`): the heartbeat is a background `sleep` for the period, re-armed at each firing, instead of a scheduled job, which can stay listed yet never fire. Where the harness caps a background command's run time, the sleep gets a timeout longer than the period.
+- **Confirm it fires**: after arming, and after every compaction or restart, the sleep is confirmed running from the process state, and any wake-up checks the last logged firing against the period, re-arming an overdue heartbeat.
+- Manifest description no longer calls the set minimalistic.
+
 ## 1.0.0 -- 2026-10-19
 
 - **Shared run rules** (`shared/runs.md`): model selection, dispatch cost, the operating rules and report contract, implementer status routing, the workspace and ledger, and resuming moved out of `sdd` into one file that `sdd`, the campaign autopilot, `consolidate` and the inline route out of `design` each read at the start of a run. The workspace, ledger and resume rules, previously restated in several skills, are stated there once; each skill keeps only where it differs. The inline route's implementer dispatches now carry the operating rules, as every other dispatch does.
