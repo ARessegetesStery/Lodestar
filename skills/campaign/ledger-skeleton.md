@@ -69,7 +69,7 @@ Workspace: `[WORKSPACE PATH]` (scratch, git-ignored). This file is the run's rec
 
 ## 8. Log
 
-(One heading per entry, in this form, so an entry can be found by grep. Kinds: setup, brief, implementation, review, run, reading, claim, retraction, ruling, parked, directive, amendment, correction, recovered, go-ahead, closing. A brief carries the fields of The loop's step 2 in `autopilot.md`. A claim entry names the evidence that moves the claim. A correction names the entry it corrects. A retraction lists everything that rested on the retracted claim. A recovered entry logs work a resume found finished but unlogged.)
+(One heading per entry, in this form, so an entry can be found by grep. Kinds: setup, brief, implementation, review, run, reading, claim, retraction, wrong belief, ruling, parked, directive, amendment, correction, recovered, go-ahead, closing. A brief carries the fields of The loop's step 2 in `autopilot.md`. A claim entry names the evidence that moves the claim. A correction names the entry it corrects. A retraction lists everything that rested on the retracted claim. A recovered entry logs work a resume found finished but unlogged.)
 
 ### [YYYY-MM-DD HH:MM] entry [N] -- [kind]: [title]
 

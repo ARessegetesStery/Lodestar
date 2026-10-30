@@ -8,7 +8,7 @@ The machinery every Lodestar run shares when it dispatches subagents or outlasts
 
 Before the first dispatch of a run, ask the user which applies: the tiering policy below; one model they name for every dispatch; or models they name per role -- implementer, reviewer, final reviewer. Skip the question only where the invocation already answers it, or, on a resume, the ledger records it. Models change faster than these rules do, and the user may know the current ones better than a policy written against an earlier generation of them. The question costs one exchange at the one moment the user is sure to be present; a wrong tier costs every dispatch of a run they are not there to watch.
 
-Record the answer in the ledger's standing section, in the user's words, when the ledger is created. It binds every dispatch of the run, including the final review, wherever the skill names a tier; it survives compaction; and a resumed run reads it there rather than asking again. Whichever answer is given, the rule below on naming the model still holds: an answer of "the policy" is carried out by naming each tier's model on its dispatch, not by omitting the model. Where the answer fixes a role's model -- one model named for every dispatch, or one named for that role -- an escalation a skill makes by tier stays on that model, and a BLOCKED reasoning problem is re-dispatched to a fresh agent on it.
+Record the answer in the ledger's standing section, in the user's words, when the ledger is created. It binds every dispatch of the run, including the final review, wherever the skill names a tier; it survives compaction; and a resumed run reads it there rather than asking again. Where the answer fixes a role's model -- one model named for every dispatch, or one named for that role -- an escalation a skill makes by tier stays on that model, and a BLOCKED reasoning problem is re-dispatched to a fresh agent on it.
 
 Each skill maps its own dispatches onto the three roles, so a per-role answer covers them.
 
@@ -43,7 +43,7 @@ Every dispatch pays a fixed cost before it does any work -- its prompts, and the
 
 ## Operating rules
 
-Before the first implementer dispatch, assemble `<workspace>/operating-rules.md`: the agent contract from `${CLAUDE_PLUGIN_ROOT}/shared/agent-contract.md` -- the block between its horizontal rules only, not the file's opening paragraph, which addresses you -- followed by this project's own rules, its testing and environment conventions, the report contract below, the waiting block under Dispatch cost, and whatever the skill adds. The contract is the portable part; the project supplies the rest. Every implementer dispatch carries the operating rules' contents, pasted, and never merely referenced. Reviewers get their constraints from the review blocks and the attention lens the skill hands them instead -- in sdd, the plan's Global Constraints; the report contract in the operating rules is written for an implementer and does not apply to them.
+Before the first implementer dispatch, assemble `<workspace>/operating-rules.md`: the agent contract from `${CLAUDE_PLUGIN_ROOT}/shared/agent-contract.md` -- the block between its horizontal rules only, not the file's opening paragraph, which addresses you -- followed by this project's own rules, its testing and environment conventions, the report contract below, the waiting block under Dispatch cost, and whatever the skill adds. Every implementer dispatch carries the operating rules' contents, pasted, and never merely referenced. Reviewers get their constraints from the review blocks and the attention lens the skill hands them instead -- in sdd, the plan's Global Constraints; the report contract in the operating rules is written for an implementer and does not apply to them.
 
 Keep it live. When a task or a review surfaces a fact that binds more than the work it was found in -- a convention, an ordering requirement, a property of the build, how the test harness signals failure -- append it to `operating-rules.md` rather than only carrying it into the next dispatch. Threaded by hand it reaches one implementer; recorded here it reaches every later one without being asked for.
 
@@ -61,6 +61,8 @@ This block goes into the operating rules, pasted, with the report path filled in
 
 **A failing check is never yours to resolve.** Do not delete it, loosen its tolerance, or redesign its fixture to make it pass. Investigate only far enough to say what the red means, then report it under your concerns and leave it failing: the effort spent explaining a failure away reliably exceeds the cost of escalating it, and a real defect talked away is the most expensive outcome this workflow has. Say which of the three it is -- a defect in the code this task owns, a defect in your own test, or a defect in code this task does NOT own. Name the third explicitly: nobody downstream can identify it from your diff, because it is not in it.
 
+**Wrong beliefs.** If code did what its author intended and the intent was wrong, in a way someone who fully understood the brief would plausibly have believed too, add one line to your report and reply: believed X, actually Y, because Z. Misremembered APIs, facts reading the code would have shown, misreading the brief, and faults in your own test do not count. Most tasks have none; say nothing when yours has none.
+
 If your dispatch carries review findings, APPEND your fix report to the report file it names, after what is already there; never overwrite it or start a new one. Include the covering tests, the command run, and the output.
 
 Then reply with ONLY the following, under fifteen lines, because the detail lives in the report file:
@@ -69,6 +71,7 @@ Then reply with ONLY the following, under fifteen lines, because the detail live
 - Files created and modified
 - A one-line verification summary
 - Your concerns, if any
+- Your wrong-belief lines, if any
 - The report file path
 
 **Escalating is always available and never counts against you.** Bad work is worse than no work. Stop and escalate when the task needs an architectural decision with several defensible answers; when you need to understand code beyond what you were given and cannot find it; when you have been reading file after file without making progress; or when finishing would mean restructuring something the task did not anticipate. If something is unclear before you start, ask then rather than guessing.
@@ -85,6 +88,8 @@ The four statuses route differently, unless the skill says otherwise:
 - **DONE_WITH_CONCERNS** -- read the concerns first. Correctness or scope concerns are addressed before review; observations are noted and review proceeds.
 - **NEEDS_CONTEXT** -- supply what was missing and re-dispatch (Dispatch cost).
 - **BLOCKED** -- assess. A context problem gets more context and the same model; a reasoning problem gets a more capable model; an oversized task gets broken up; a wrong plan escalates to the user. Never force the same model to retry unchanged.
+
+Re-test a reply's wrong belief against the report contract's bar, since you hold context the implementer lacked. Log what clears it at once as `wrong belief: <line>`, labelled as the run's entries are; a resume looking for a task's last entry skips these lines.
 
 ## Workspace and ledger
 

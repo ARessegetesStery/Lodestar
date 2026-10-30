@@ -74,7 +74,7 @@ Its code and results join what this session decides on, so it runs under three o
 
 It stays bounded: it answers the question it was opened with, and nothing else. When the result raises a new question, or the budget runs out with the question open, stop and report; whether to open another lane, chain a campaign, or rule without the answer is the user's. A lane that keeps reopening is a campaign without a charter, and its record would be scattered across a consolidation's notes.
 
-When it closes, report the result at its tier, and have the user checkpoint the lane's code with `/lodestar:commit-plan`, naming the lane and `<workspace>/notes.md` as its manifest, so that its code goes under `exp:` as a campaign's does. The checkpoint moves to the new HEAD, and every later diff and the equivalence gate use it. The lane's items are ruled on beside the campaign's.
+When it closes, report the result at its tier and any `wrong belief` lines, and have the user checkpoint the lane's code with `/lodestar:commit-plan`, naming the lane and `<workspace>/notes.md` as its manifest, so that its code goes under `exp:` as a campaign's does. The checkpoint moves to the new HEAD, and every later diff and the equivalence gate use it. The lane's items are ruled on beside the campaign's.
 
 ## Rulings
 

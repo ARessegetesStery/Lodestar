@@ -16,7 +16,7 @@ Every skill but `commit-plan` carries `disable-model-invocation: false`, so each
 - **`/lodestar:consolidate`** -- Follows a checkpointed campaign. Has its results reviewed cold and settles with you whether they are ready to consolidate or need a bounded experiment or a chained campaign first; once ready, takes your keep-or-discard ruling on each change and each ruling the campaign took on your behalf, and writes the spec that turns the kept changes into production code.
 - **`/lodestar:sdd`** -- Executes an approved spec or plan through per-task subagents, with a fresh reviewer after each task and a whole-branch review at the end. Also runs plan-only.
 - **`/lodestar:handoff`** -- Drafts a self-contained prompt that a later session, or a different agent, can pick the work up from.
-- **`/lodestar:wrap-up`** -- Reports what is still uncertain, what you may be overlooking, what changed without being asked, and the state a fresh session needs to review the work cold.
+- **`/lodestar:wrap-up`** -- Reports what is still uncertain, what you may be overlooking, what changed without being asked, what was plausibly believed yet wrong, and the state a fresh session needs to review the work cold.
 - **`/lodestar:commit-plan`** -- Decides whether the uncommitted working tree is one commit or several, and gives the commands for you to run: subject lines in the repository's own convention, no body, no attribution. Invoked only by you.
 
 ## Suggested workflow
@@ -42,7 +42,7 @@ Every skill but `commit-plan` carries `disable-model-invocation: false`, so each
                 |                 |
                 +--------+--------+
                          |
-                      wrap-up          uncertainties, blind spots, side changes, continuation context
+                      wrap-up          uncertainties, blind spots, side changes, wrong beliefs, continuation context
                          |
            (optional) handoff          prompt for the next session
 ```
@@ -55,7 +55,7 @@ Every skill but `commit-plan` carries `disable-model-invocation: false`, so each
 6. **`wrap-up`**, before you review or commit. It reports the complement of a completion summary: what a run leaves unresolved rather than what it produced. After the `sdd` route it runs on its own and lands in `docs/lodestar/wrap-up/`; after the inline route you invoke it. Its last section briefs a cold session -- what shipped, where it lives in git, the decisions taken, what is verified -- so the morning after an unattended run you can open a fresh agent on the file instead of reloading a stale conversation; a full standalone prompt is still `handoff`'s job.
 7. **`handoff`**, when the work outlives the session. Also useful earlier, to park a second idea `brainstorming` set aside or a subsystem `design` decomposed out of scope.
 
-Each step stops when it is done and recommends the next. None of them advances without your go-ahead, save for the `sdd` and `campaign` wrap-ups noted above.
+Each step stops when it is done and recommends the next.
 
 The long runs -- `sdd`, the `campaign` autopilot, `consolidate`, and the inline route out of `design` -- share one set of run rules, in `shared/runs.md`. Each opens by asking which models to dispatch: the tiering policy there, or models you name. Models change faster than the policy does, and the answer is recorded where a resumed run reads it rather than asking again. Every dispatch follows its Dispatch cost, on when to resume a subagent, how much work to give one, and which checks it may run; and every long run keeps a heartbeat armed to catch stalls while anything runs in the background, and brings its ledger up to date when you are about to compact.
 

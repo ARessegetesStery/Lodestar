@@ -2,6 +2,12 @@
 
 Versions follow the `[x.y.z]` tags in the commit subjects; 0.1.0 is the untagged first commit, and two commits carry `[0.1.5]`. Dates are commit dates.
 
+## 1.1.0 -- 2026-10-30
+
+- **Known practice** (`design`): the investigation flags, once, anything the brief treats as decided that conflicts with known practice, from the agent's own knowledge or a quick outside check; the ruling stays the user's.
+- **Wrong beliefs** (`shared/runs.md`, `wrap-up`): implementers report, only when it happens, a wrong belief someone who fully understood the brief would plausibly have held. The controller re-tests the bar before logging it, and a new `wrap-up` section before the cold briefing carries what survives, capped at five, along with any campaign claim retracted on sound evidence. A consolidation lane reports its lines when it closes.
+- Tightened wording in `wrap-up`, `design`, `sdd`, `shared/runs.md` and the README to offset the additions; no rule changed.
+
 ## 1.0.1 -- 2026-10-19
 
 - **Heartbeat on a chained timer** (`shared/runs.md`): the heartbeat is a background `sleep` for the period, re-armed at each firing, instead of a scheduled job, which can stay listed yet never fire. Where the harness caps a background command's run time, the sleep gets a timeout longer than the period.

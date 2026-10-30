@@ -1,6 +1,6 @@
 {
   "name": "lodestar",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Development-process skills for Claude Code: brainstorming, design-to-spec, experiment campaigns and their consolidation, subagent-driven development with per-task review, cross-session handoff, end-of-work wrap-up, and commit planning.",
   "author": {
     "name": "Arias Stery"
