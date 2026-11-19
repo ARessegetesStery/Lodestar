@@ -18,7 +18,7 @@ Subagents inherit none of this session's context, so you construct exactly what 
 - **Plan in hand.** Skip planning. Run the execution loop against the given plan file.
 - **Plan only.** Write the plan and stop, typically to hand it to another session or agent.
 
-Every entry point first reads `${CLAUDE_PLUGIN_ROOT}/shared/runs.md` in full: it holds the machinery every long run shares, and this file relies on it throughout. Spec in hand and plan in hand open with the dispatch question (Model selection), before anything is dispatched, unless this plan's ledger already records an answer. Plan only dispatches a single reviewer, and uses the tiering policy unless the user says otherwise.
+Every entry point first reads `../../shared/runs.md` (relative to this skill file) in full: it holds the machinery every long run shares, and this file relies on it throughout. Spec in hand and plan in hand open with the dispatch question (Model selection), before anything is dispatched, unless this plan's ledger already records an answer. Plan only dispatches a single reviewer, and uses the tiering policy unless the user says otherwise.
 
 ## Scale escape hatch
 
@@ -107,7 +107,7 @@ Then read the primary files the plan touches, once, and record in the operating 
 
 ### Dispatch
 
-- Extract the task text with `bash "${CLAUDE_PLUGIN_ROOT}/skills/sdd/scripts/task-brief" PLAN_FILE N OUTFILE`, and give the implementer that path. Never make an implementer read the whole plan.
+- Extract the task text with `python "<scripts>/task-brief.py" PLAN_FILE N OUTFILE` (or `bash "<scripts>/task-brief" PLAN_FILE N OUTFILE`), where `<scripts>` is `./scripts` relative to this skill file, and give the implementer that path. Never make an implementer read the whole plan.
 - The dispatch prompt contains: the operating rules pasted verbatim; one line on where this task fits; the brief path, introduced as its requirements, with exact values to be used verbatim; interfaces and decisions from earlier tasks that bind only this task, anything wider having gone into the operating rules; your resolution of any ambiguity you noticed in the brief; and the report-file path.
 - A dispatch describes one task, not the session's history. Do not paste accumulated prior-task summaries into later dispatches.
 - If an earlier task parked a finding in the area this task touches, carry a pointer to that ledger entry.
@@ -126,14 +126,14 @@ Nothing is committed, so a review cannot be scoped by commit range. It is scoped
 
 **Build packages only when the tree is yours alone.** That check is unscoped, so anything a parallel implementer is midway through writing shows up in it too. Wait for every parallel implementer to return before building any of their packages. If an unexpected path is then ambiguous between two returned tasks, attribute it by elimination against their declared lists, and say in the review dispatch that the attribution is inferred rather than certain.
 
-Then build the package with `bash "${CLAUDE_PLUGIN_ROOT}/skills/sdd/scripts/review-package" OUTFILE PATH [PATH...]`, which writes into one file:
+Then build the package with `python "<scripts>/review-package.py" OUTFILE PATH [PATH...]` (or `bash "<scripts>/review-package" OUTFILE PATH [PATH...]`), which writes into one file:
 
 - `git status --porcelain -- PATHS`.
 - `git diff --stat -- PATHS`.
 - `git diff -U10 -- PATHS`.
 - The full contents of every untracked file under those paths, found with `git ls-files --others --exclude-standard`. This part is not optional: `git diff` shows nothing at all for a new file, so a package without it reviews an empty change.
 
-`${CLAUDE_PLUGIN_ROOT}` is the plugin's install directory and resolves wherever it appears in this file; keep it double-quoted, since the path can contain spaces. Run both scripts with the user's project as the working directory, never from the plugin's own directory: `review-package` resolves the repository from where it is run, so a mis-rooted call silently builds the package over the wrong repository. It fails loudly on an empty package, which is what catches that.
+`<scripts>` is `./scripts` relative to this skill file's directory; keep the script path double-quoted, since it can contain spaces. Prefer the `.py` helpers (using `python` or `python3`) on Windows or in sandboxed environments where `bash` is unavailable. Run both scripts with the user's project as the working directory, never from the plugin's own directory: `review-package` resolves the repository from where it is run, so a mis-rooted call silently builds the package over the wrong repository. It fails loudly on an empty package, which is what catches that.
 
 All read-only. Hand the reviewer the file path; the package never enters your own context.
 
@@ -141,7 +141,7 @@ All read-only. Hand the reviewer the file path; the package never enters your ow
 
 Never skip it, and never accept a report missing either verdict -- compliance with the task and quality of the work are both required. An implementer's self-review does not replace it.
 
-Dispatch with the task review block from `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md`, filling in the brief path, the report path, the review package path, and the plan's Global Constraints copied verbatim as the reviewer's attention lens. That block carries the severity vocabulary, since the grading is the reviewer's judgment rather than yours.
+Dispatch with the task review block from `./reviewer-prompt.md`, filling in the brief path, the report path, the review package path, and the plan's Global Constraints copied verbatim as the reviewer's attention lens. That block carries the severity vocabulary, since the grading is the reviewer's judgment rather than yours.
 
 Do not pre-judge. Never instruct a reviewer to ignore an issue or cap its severity. If a finding would be a false positive, let it be raised and adjudicate it. Text like "do not flag" or "the plan chose this" in a prompt you are writing means you are sparing yourself a review loop.
 
@@ -162,7 +162,7 @@ A fix dispatch carries the findings and one instruction: reproduce the failure b
 
 Every round, the implementer re-runs the checks covering the amended code and appends its fix report. Confirm that report names the covering tests, the command, and the output before re-reviewing. A fix dispatch is an implementer like any other, so the quiet-tree rule governs its package too: where two tasks are in fix rounds at once, wait for both before building either package.
 
-The re-review regenerates the package over the same paths, so it sees the whole task again rather than only the fix. It is scoped by the prompt instead: dispatch the re-review block from `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md`, carrying the open findings verbatim. New Critical or Important breakage joins the open findings; anything else it notices goes to the ledger as a deferred minor and never extends the loop.
+The re-review regenerates the package over the same paths, so it sees the whole task again rather than only the fix. It is scoped by the prompt instead: dispatch the re-review block from `./reviewer-prompt.md`, carrying the open findings verbatim. New Critical or Important breakage joins the open findings; anything else it notices goes to the ledger as a deferred minor and never extends the loop.
 
 Append after each round: `Task N: fix round R/5 (impl: <model>, review: <model>): X addressed, Y open. <one-liners>`.
 
@@ -186,7 +186,7 @@ Record why in the ledger. Add it to project memory only where the stop ends the 
 
 ## Final review
 
-Build the package from the union of the files the ledger records as touched, not from the plan's declared lists. The two differ by every file a task changed without declaring, and those are the files nobody planned for -- the last set that should be dropped from the last review. Dispatch the final whole-branch review block from `${CLAUDE_PLUGIN_ROOT}/skills/sdd/reviewer-prompt.md` on the most capable model available, giving it the plan, the spec where one exists, the package, and the ledger.
+Build the package from the union of the files the ledger records as touched, not from the plan's declared lists. The two differ by every file a task changed without declaring, and those are the files nobody planned for -- the last set that should be dropped from the last review. Dispatch the final whole-branch review block from `./reviewer-prompt.md` on the most capable model available, giving it the plan, the spec where one exists, the package, and the ledger.
 
 Then dispatch **one** fix subagent carrying the complete list: the final review's own findings, every deferred minor from the ledger, and every parked finding the review overturned or re-graded upward -- a ruling the review rejected is a finding again, and nothing else would carry it back. Then run one re-review of that fix, over a package scoped to the paths the wave itself touched: rebuilding over the whole branch would hand the re-reviewer every already-accepted line to re-litigate, and the re-review block's per-finding verdict supplies the discipline the narrower package gives up. Adjudicate anything residual as at the cap above. There is no second fix wave, save for a regression Completion's run finds.
 
@@ -209,6 +209,6 @@ Report the result in a line. Where a clause did not hold, say which, where, and 
 
 **Report what shipped.** The user watched none of this, and every artifact that records it -- the ledger, the task reports, the review packages -- sits in a scratch area that is gitignored and does not survive. Before the wrap-up, state what the run delivered: what each task produced, taken from the ledger's `Task N: complete` lines rather than re-derived, since those already carry the files touched and the review outcome; and, where the plan's verification produced measurements rather than a verdict, the measurements.
 
-**End with the wrap-up report.** The ledger records what was produced; the wrap-up reports the complement, which is what the user needs before reviewing a branch this process built without them. Produce it as part of finishing the run, without asking: follow `${CLAUDE_PLUGIN_ROOT}/skills/wrap-up/SKILL.md` and write it to `docs/lodestar/wrap-up/YYYY-MM-DD-topic-wrap-up.md`, on the same topic as the plan, unless the project or the user states a location.
+**End with the wrap-up report.** The ledger records what was produced; the wrap-up reports the complement, which is what the user needs before reviewing a branch this process built without them. Produce it as part of finishing the run, without asking: follow `../wrap-up/SKILL.md` and write it to `docs/lodestar/wrap-up/YYYY-MM-DD-topic-wrap-up.md`, on the same topic as the plan, unless the project or the user states a location.
 
 Then append `Run complete` to the ledger, and delete the heartbeat if one is armed. A later run of the same plan starts fresh from that line rather than resuming.

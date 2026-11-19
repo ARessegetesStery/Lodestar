@@ -1,10 +1,10 @@
 # Lodestar
 
-A Claude Code plugin holding a small set of development-process skills: work out what to build, turn it into a spec -- or, where the answer has to be found by experiment, run a campaign and consolidate what it finds into one -- execute the spec through fresh-context subagents with review between them, and close out a session honestly.
+A plugin for Claude Code and Antigravity holding a small set of development-process skills: work out what to build, turn it into a spec -- or, where the answer has to be found by experiment, run a campaign and consolidate what it finds into one -- execute the spec through fresh-context subagents with review between them, and close out a session honestly.
 
 ## Compatibility
 
-**Claude Code only.** The skills are written for Claude Code's plugin system, subagent dispatch and scheduled wake-ups, and are run and tested there alone. The SDD helpers are bash scripts; on Windows, Claude Code runs them through Git for Windows' bash.
+**Claude Code and Antigravity.** The repository ships both `.claude-plugin/plugin.json` (Claude Code) and a root `plugin.json` (Antigravity) so the same directory loads natively in either harness. Skills reference sibling and shared files by relative path from each file rather than harness-specific environment variables. The SDD helpers ship as both bash scripts (`review-package`, `task-brief`) and cross-platform Python 3 scripts (`review-package.py`, `task-brief.py`) for Windows/PowerShell and sandboxed environments where bash is unavailable.
 
 ## The skills
 
@@ -65,7 +65,7 @@ The long runs -- `sdd`, the `campaign` autopilot, `consolidate`, and the inline 
 
 `shared/runs.md` holds the machinery the long runs share -- model selection, dispatch cost, the operating rules and implementer report contract, the workspace and ledger, the heartbeat and compaction, and resuming -- for the same reason. Each long run reads it in full at its start, and a skill states in its own text where its process differs. Keeping the rules in one place stops the skills drifting apart on them, and spares a campaign or consolidation from loading all of `sdd` to reach them.
 
-Inside `sdd`, `skills/sdd/reviewer-prompt.md` carries the three review dispatch blocks -- task, fix round, whole branch -- and `skills/sdd/scripts/` holds two bash helpers: `review-package`, which builds a path-scoped review package from an uncommitted working tree, and `task-brief`, which extracts one task's text from a plan. Claude Code resolves these through `${CLAUDE_PLUGIN_ROOT}`.
+Inside `sdd`, `skills/sdd/reviewer-prompt.md` carries the three review dispatch blocks -- task, fix round, whole branch -- and `skills/sdd/scripts/` holds two helpers (each in both bash and Python 3): `review-package` / `review-package.py`, which builds a path-scoped review package from an uncommitted working tree, and `task-brief` / `task-brief.py`, which extracts one task's text from a plan. Skills resolve these and `shared/` via relative paths from each file.
 
 Inside `campaign`, `SKILL.md` holds the charter phase and the definitions the charter sets -- claim tiers, decision rules, layout -- and `skills/campaign/autopilot.md` holds the autopilot phase, read only when the skill is invoked with a charter, so the discussion that writes a charter does not carry the autopilot's rules. `skills/campaign/ledger-skeleton.md` is the layout the autopilot copies into its ledger -- state sections updated in place, and an append-only dated log -- and `skills/campaign/reviewer-prompt.md` carries its three review blocks: an experimental change, claims about to be promoted, and the closing report. Its implementation reviews build their packages with `sdd`'s `review-package`. Inside `consolidate`, `skills/consolidate/reviewer-prompt.md` carries the opening review block: a cold, read-only reading of the campaign's record that runs nothing.
 
@@ -86,13 +86,21 @@ For iterating on the skills themselves, load the directory live instead, which s
 claude --plugin-dir /path/to/Lodestar
 ```
 
+For Antigravity, install directly from GitHub:
+
+```
+agy plugin install https://github.com/ARessegetesStery/Lodestar
+```
+
+Or register a local checkout live via `~/.gemini/config/plugins.json` (pointing an `entries` path at the parent directory with `"include_only": ["Lodestar"]`).
+
 ## Maintenance principle
 
 Rules are added only in response to an observed failure, never preemptively. A rule written for a problem nobody has hit yet costs attention on every run and earns nothing back. Before extending the toolkit, check that the addition answers a failure that actually happened.
 
 Skills are project-independent. Anything that holds for one project -- its paths, tools, domain vocabulary, run procedures, model names -- belongs in that project's instruction file or documents, which a skill tells the agent to load, and never in the skill text. Where a skill names a default, such as `Temp/` or `docs/lodestar/`, the project overrides it. The test for a sentence: would it still be true of a project in another language and another domain? A rule learned on one project passes only once it has been restated so that it would.
 
-The version is declared in both `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`; a release bumps the two together and adds an entry to `CHANGELOG.md`.
+The version is declared in `plugin.json`, `.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json`; a release bumps all three together and adds an entry to `CHANGELOG.md`.
 
 ## License
 

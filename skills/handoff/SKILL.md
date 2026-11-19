@@ -37,7 +37,7 @@ Anything reachable from a file in the context reload list. That list is a pointe
 
 This is the main way a handoff grows without getting better: the reading list and the task description end up doing the same job, and the content that exists nowhere else gets diluted by content the executor was about to read anyway. The division that prevents it -- the context reload list carries everything a file can carry, and the rest of the prompt carries only what no file carries: the decisions taken in conversation, the scope, the non-goals, the open questions, and the next step.
 
-Project rules are the common case of getting this wrong. The executor already receives the project's CLAUDE.md, at every level of the hierarchy the main conversation loads. Restating its rules changes nothing.
+Project rules are the common case of getting this wrong. The executor already receives the project's instruction file (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md`), at every level of the hierarchy the main conversation loads. Restating its rules changes nothing.
 
 ## Prompt structure to produce
 
@@ -46,7 +46,7 @@ In this order:
 1. **Context reload.** An ordered list of the files the executor must read first, by path, including the relevant project docs and project memory. Say what each one is for, in a clause.
 2. **The task.** What to do, the precise scope, and the explicit non-goals. Where a non-goal contradicts something the executor is being sent to read -- an audit that ranks it urgent, a document that calls it a gap -- say so, and say the decision supersedes it. Otherwise the executor helpfully undoes it.
 3. **Decisions and open questions.** The settled decisions with their reasons, and separately the questions the executor has to answer. Mark which is which.
-4. **Constraints.** The agent contract, pasted verbatim. It lives at `${CLAUDE_PLUGIN_ROOT}/shared/agent-contract.md` -- that placeholder resolves to this plugin's install directory, so it is not a path in the user's project. Paste the block between its horizontal rules only, not the file's opening paragraph, which addresses you rather than the executor. Add a project rule alongside it only where an injected default points the other way and you can name the directive it conflicts with. If you cannot name the conflict, the rule does not belong here.
+4. **Constraints.** The agent contract, pasted verbatim. It lives at `../../shared/agent-contract.md` relative to this skill file (not a path in the user's project). Paste the block between its horizontal rules only, not the file's opening paragraph, which addresses you rather than the executor. Add a project rule alongside it only where an injected default points the other way and you can name the directive it conflicts with. If you cannot name the conflict, the rule does not belong here.
 5. **Process.** Any procedure the executor should follow and where it is written down. Name a skill only where one actually applies; most handoffs do not need one.
 6. **Success criteria.** Including the exact verification commands.
 7. **Reporting expectations.** What the executor reports when it is done, and where that goes: the path of the file to write the full record to, and what the reply itself must carry -- what was done, what was verified and with which command, what remains, and any concerns. Name the destination. "Report back" with no path produces a message that disappears with the session.

@@ -1,6 +1,6 @@
 ---
 name: commit-plan
-description: Use when the user asks how to commit the uncommitted working tree; decides whether it is one commit or several and returns the git commands for the user to run, without running git itself.
+description: Only invoke when the user explicitly asks to plan commits for the uncommitted working tree; decides whether it is one commit or several and returns the git commands for the user to run, without running git itself. Do not auto-invoke this skill.
 disable-model-invocation: true
 ---
 
@@ -18,7 +18,7 @@ Unless the invocation already names one, open by asking the user whether they wa
 
 - **The whole uncommitted tree.** `git status --porcelain` for the file list, `git diff` for tracked modifications, `git diff --cached --name-only` for anything already staged, and the full contents of every untracked file. `git diff` does not show untracked files at all, and at the end of a body of work the new files are often most of it, so a plan built from the diff alone misfiles exactly the part that matters.
 - **The repository's commit history.** The last thirty or so subjects, `git log --format=%s -30`. This is the convention: the prefix vocabulary, the tense, how long subjects run, whether a version appears in them, and how past work of the same shape was divided. Repositories differ in all of these, which is why the convention is read here rather than written down in this skill.
-- **The project's instruction file** (CLAUDE.md, AGENTS.md), for any stated commit convention. A stated rule outranks one inferred from the history.
+- **The project's instruction file** (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`), for any stated commit convention. A stated rule outranks one inferred from the history.
 - **This session**, where the work was done in it. What each change was for is often clearer from the conversation than from the diff.
 
 ## Deciding the split

@@ -2,6 +2,13 @@
 
 Versions follow the `[x.y.z]` tags in the commit subjects; 0.1.0 is the untagged first commit, and two commits carry `[0.1.5]`. Dates are commit dates.
 
+## 1.2.0 -- 2026-11-18
+
+- **Dual Claude Code and Antigravity support**: added root `plugin.json` alongside `.claude-plugin/plugin.json` so the repository loads natively as a plugin in both harnesses.
+- **Relative plugin paths**: replaced `${CLAUDE_PLUGIN_ROOT}` references across the skills and shared docs with relative paths from each file, so shared files, review blocks, and scripts resolve in harnesses that do not expand `${CLAUDE_PLUGIN_ROOT}`.
+- **Python helper scripts** (`skills/sdd/scripts/`): added `review-package.py` and `task-brief.py` alongside the bash scripts for Windows/PowerShell and sandboxed environments where bash is unavailable.
+- **Harness-neutral shared rules** (`shared/agent-contract.md`, `shared/runs.md`, `campaign`, `commit-plan`, `handoff`, `wrap-up`): generalized instruction-file references (`CLAUDE.md` / `AGENTS.md` / `GEMINI.md`), scratchpad override wording (covering both OS temp and Antigravity scratch directories), and heartbeat timer wording (chained one-shot timer via harness timer tool or background `sleep`); clarified `commit-plan`'s description so harnesses without `disable-model-invocation` only invoke it on explicit request.
+
 ## 1.1.0 -- 2026-10-30
 
 - **Known practice** (`design`): the investigation flags, once, anything the brief treats as decided that conflicts with known practice, from the agent's own knowledge or a quick outside check; the ruling stays the user's.
